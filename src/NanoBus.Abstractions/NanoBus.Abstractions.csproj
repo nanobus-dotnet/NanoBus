@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net8.0</TargetFramework>
+	<Nullable>enable</Nullable>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<LangVersion>latest</LangVersion>
+	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+	<!-- Package metadata -->
+	<PackageId>NanoBus.Abstractions</PackageId>
+	<Title>NanoBus Abstractions</Title>
+	<Version>0.0.3-alpha.1</Version>
+	<Description>Lightweight, AOT-first abstractions for NanoBus implementations.</Description>
+	<Authors>Wayland Young</Authors>
+	<RepositoryUrl>https://github.com/nanobus-dotnet/nanobus</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+	<License>MIT</License>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+	<!-- Trim and AOT readiness -->
+	<PublishTrimmed>true</PublishTrimmed>
+	<TrimMode>full</TrimMode>
+	<PublishAot>true</PublishAot>
+	<EnableAotAnalyzer>true</EnableAotAnalyzer>
+	<InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!-- Including README.md -->
+  <ItemGroup>
+	<None Include="../../README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <!-- No dependencies for abstractions -->
+
+</Project>
