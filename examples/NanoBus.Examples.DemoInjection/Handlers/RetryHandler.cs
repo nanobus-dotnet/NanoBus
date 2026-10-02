@@ -3,9 +3,7 @@ using NanoBus.Examples.DemoInjection.Messages;
 
 namespace NanoBus.Examples.DemoInjection.Handlers;
 
-public interface IRetryHandler : IMessageHandler<OrderConfirmedEvent> { }
-
-public class RetryHandler(ILogger<RetryHandler> logger) : IRetryHandler
+public class RetryHandler(ILogger<RetryHandler> logger) : IMessageHandler<OrderConfirmedEvent>
 {
     private readonly ILogger<RetryHandler> _logger = logger;
 
