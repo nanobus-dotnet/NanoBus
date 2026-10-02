@@ -7,22 +7,26 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSerilog(configure =>
 {
-    configure.MinimumLevel.Debug()
-    .WriteTo.Console();
+    configure.MinimumLevel
+        .Debug()
+        .WriteTo.Console();
 });
 
-builder.Services.AddSingleton<ICreateSalesOrderHandler, CreateSalesOrderHandler>();
-builder.Services.AddSingleton<IOrderConfirmedHandler, OrderConfirmedHandler>();
-builder.Services.AddSingleton<IRetryHandler, RetryHandler>();
+builder.Services.AddScoped<CreateSalesOrderHandler>();
+builder.Services.AddScoped<OrderConfirmedHandler>();
+builder.Services.AddScoped<RetryHandler>();
 
-builder.Services.AddDemoServiceBus((sp, transport) =>
+builder.Services.AddDemoServiceBus(null, (provider, transport) =>
 {
-    var createOrderHandler = sp.GetRequiredService<ICreateSalesOrderHandler>();
-    var orderConfirmedHandler = sp.GetRequiredService<IOrderConfirmedHandler>();
-    var retryHandler = sp.GetRequiredService<IRetryHandler>();
+    using var scope = provider.CreateScope();
+    var createOrderHandler = scope.ServiceProvider.GetRequiredService<CreateSalesOrderHandler>();
+    var orderConfirmedHandler = scope.ServiceProvider.GetRequiredService<OrderConfirmedHandler>();
+    var retryHandler = scope.ServiceProvider.GetRequiredService<RetryHandler>();
 
     transport.RegisterHandler(createOrderHandler);
     transport.RegisterHandler(orderConfirmedHandler);
+
+    // Uncomment this line to see retries.
     //transport.RegisterHandler(retryHandler);
 });
 

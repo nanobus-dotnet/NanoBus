@@ -3,9 +3,7 @@ using NanoBus.Examples.DemoInjection.Messages;
 
 namespace NanoBus.Examples.DemoInjection.Handlers;
 
-public interface ICreateSalesOrderHandler : IMessageHandler<CreateSalesOrderCommand> { }
-
-public class CreateSalesOrderHandler(ILogger<CreateSalesOrderHandler> logger) : ICreateSalesOrderHandler
+public class CreateSalesOrderHandler(ILogger<CreateSalesOrderHandler> logger) : IMessageHandler<CreateSalesOrderCommand>
 {
     private readonly ILogger<CreateSalesOrderHandler> _logger = logger;
 

@@ -12,9 +12,9 @@ public static class CoreServiceBusExtensions
     /// <summary>
     /// Adds the core service bus.
     /// </summary>
-    /// <param name="services"></param>
+    /// <param name="services">The service collection to configure.</param>
     /// <param name="configure">Callback to late-bind the service bus configuration.</param>
-    /// <returns></returns>
+    /// <returns>The configured service collection.</returns>
     public static IServiceCollection AddServiceBus(this IServiceCollection services, Action<IServiceProvider, ITransport>? configure = null)
     {
         services.AddSingleton<IServiceBus>(sp =>

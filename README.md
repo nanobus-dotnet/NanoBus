@@ -15,6 +15,7 @@ The rough structure of NanoBus code is the following:
 - `NanoBus.Core.DependencyInjection` - Extensions for core dependency injection.
 - `NanoBus.Transports.Demo` - Simple implementation for demoing/learning NanoBus.
 - `NanoBus.Transports.Demo.DependencyInjection` - Extensions for the demo transport dependency injection.
+- `NanoBus.Transports.Demo.SourceGeneration` - Source generation for the demo transport implementation.
 
 Other NanoBus enhancements and transport implementations will follow. Outbox and saga support may be implemented depending on demand or time available.
 
