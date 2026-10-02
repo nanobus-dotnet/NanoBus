@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/Core/">
+    <Project Path="NanoBus.Core/NanoBus.Core.csproj" />
+  </Folder>
+  <Folder Name="/Examples/">
+    <Project Path="../examples/NanoBus.Examples.DemoConsole/NanoBus.Examples.DemoConsole.csproj" />
+  </Folder>
+  <Folder Name="/Transports/">
+    <Project Path="NanoBus.Transports.Demo/NanoBus.Transports.Demo.csproj" />
+  </Folder>
+  <Project Path="../tests/NanoBus.UnitTests/NanoBus.UnitTests.csproj" />
+  <Project Path="NanoBus.Abstractions/NanoBus.Abstractions.csproj" />
+</Solution>
