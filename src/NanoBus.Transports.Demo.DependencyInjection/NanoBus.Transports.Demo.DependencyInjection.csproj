@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net8.0</TargetFramework>
+	<Nullable>enable</Nullable>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<LangVersion>latest</LangVersion>
+	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+	<!-- Package metadata -->
+	<PackageId>NanoBus.Transports.Demo.DependencyInjection</PackageId>
+	<Title>NanoBus Demo Transport Dependency Injection</Title>
+	<Version>0.0.1-alpha.1</Version>
+	<Description>Lightweight, AOT-first demo dependency injection for NanoBus.</Description>
+	<Authors>Wayland Young</Authors>
+	<RepositoryUrl>https://github.com/nanobus-dotnet/nanobus</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+	<License>MIT</License>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+	<!-- Trim and AOT readiness -->
+	<PublishTrimmed>true</PublishTrimmed>
+	<TrimMode>full</TrimMode>
+	<PublishAot>true</PublishAot>
+	<EnableAotAnalyzer>true</EnableAotAnalyzer>
+	<InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!-- Including README.md -->
+  <ItemGroup>
+	<None Include="../../README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NanoBus.Core.DependencyInjection\NanoBus.Core.DependencyInjection.csproj" />
+    <ProjectReference Include="..\NanoBus.Transports.Demo\NanoBus.Transports.Demo.csproj" />
+  </ItemGroup>
+
+</Project>

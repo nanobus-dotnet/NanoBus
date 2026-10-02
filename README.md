@@ -12,7 +12,9 @@ Since reflection can't be supported in AOT code, message handlers cannot be disc
 The rough structure of NanoBus code is the following:
 - `NanoBus.Abstractions` - Core abstractions necessary for all NanoBus implementations.
 - `NanoBus.Core` - Core implementations.
+- `NanoBus.Core.DependencyInjection` - Extensions for core dependency injection.
 - `NanoBus.Transports.Demo` - Simple implementation for demoing/learning NanoBus.
+- `NanoBus.Transports.Demo.DependencyInjection` - Extensions for the demo transport dependency injection.
 
 Other NanoBus enhancements and transport implementations will follow. Outbox and saga support may be implemented depending on demand or time available.
 
