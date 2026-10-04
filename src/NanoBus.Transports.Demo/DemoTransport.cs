@@ -14,11 +14,7 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
 {
     private readonly TransportOptions _options = options ?? new();
     private readonly ILogger<DemoTransport> _logger = logger ?? NullLogger<DemoTransport>.Instance;
-
-    /// <summary>
-    /// Holds references to all handler methods by type name.
-    /// </summary>
-    protected readonly ConcurrentDictionary<string, ConcurrentBag<Func<IMessage, MessageContext, CancellationToken, Task>>> _handlers = [];
+    private readonly ConcurrentDictionary<string, ConcurrentBag<Func<IMessage, MessageContext, CancellationToken, Task>>> _handlers = [];
 
     /// <inheritdoc />
     public void RegisterHandler<T>(IMessageHandler<T> handler) where T : IMessage

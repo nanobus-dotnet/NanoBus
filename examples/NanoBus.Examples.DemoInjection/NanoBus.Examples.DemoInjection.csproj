@@ -15,6 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NanoBus.Transports.Demo.DependencyInjection\NanoBus.Transports.Demo.DependencyInjection.csproj" />
+    <ProjectReference Include="..\..\src\NanoBus.Transports.Demo\NanoBus.Transports.Demo.csproj" />
   </ItemGroup>
 </Project>

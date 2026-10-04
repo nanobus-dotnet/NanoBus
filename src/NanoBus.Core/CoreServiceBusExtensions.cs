@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using NanoBus.Abstractions;
 
-namespace NanoBus.Core.DependencyInjection;
+namespace NanoBus.Core;
 
 /// <summary>
 /// Core service bus extensions.
@@ -19,7 +19,7 @@ public static class CoreServiceBusExtensions
     {
         services.AddSingleton<IServiceBus>(sp =>
         {
-            var logger = sp.GetRequiredService<ILogger<ServiceBus>>();
+            var logger = sp.GetService<ILogger<ServiceBus>>();
             var transport = sp.GetRequiredService<ITransport>();
             var bus = new ServiceBus(transport, logger);
             configure?.Invoke(sp, transport);
