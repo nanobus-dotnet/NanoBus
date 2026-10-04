@@ -28,10 +28,10 @@ public class ServiceBusTests
         var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
 
         // Act
-        await _bus.SendAsync(message, metadata, CancellationToken.None);
+        await _bus.SendAsync(message, metadata, TestContext.Current.CancellationToken);
 
         // Assert
-        _transport.Verify(x => x.SendAsync(message, metadata, CancellationToken.None), Times.Once);
+        _transport.Verify(x => x.SendAsync(message, metadata, TestContext.Current.CancellationToken), Times.Once);
     }
 
     [Fact]
@@ -43,10 +43,10 @@ public class ServiceBusTests
         var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
 
         // Act
-        await _bus.PublishAsync(message, metadata, CancellationToken.None);
+        await _bus.PublishAsync(message, metadata, TestContext.Current.CancellationToken);
 
         // Assert
-        _transport.Verify(x => x.PublishAsync(message, metadata, CancellationToken.None), Times.Once);
+        _transport.Verify(x => x.PublishAsync(message, metadata, TestContext.Current.CancellationToken), Times.Once);
     }
 
     [Fact]
@@ -55,10 +55,10 @@ public class ServiceBusTests
         // Arrange
 
         // Act
-        await _bus.StartAsync(CancellationToken.None);
+        await _bus.StartAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        _transport.Verify(x => x.StartAsync(CancellationToken.None), Times.Once);
+        _transport.Verify(x => x.StartAsync(TestContext.Current.CancellationToken), Times.Once);
     }
 
     [Fact]
@@ -69,10 +69,10 @@ public class ServiceBusTests
         var handler = new Mock<IMessageHandler<TestMessage>>();
 
         // Act
-        await _bus.SendAsync(message, null, CancellationToken.None);
+        await _bus.SendAsync(message, null, TestContext.Current.CancellationToken);
 
         // Assert
-        _transport.Verify(x => x.SendAsync(message, It.IsAny<MessageMetadata>(), CancellationToken.None), Times.Once);
+        _transport.Verify(x => x.SendAsync(message, It.IsAny<MessageMetadata>(), TestContext.Current.CancellationToken), Times.Once);
     }
 
     [Fact]
@@ -83,10 +83,10 @@ public class ServiceBusTests
         var handler = new Mock<IMessageHandler<TestMessage>>();
 
         // Act
-        await _bus.PublishAsync(message, null, CancellationToken.None);
+        await _bus.PublishAsync(message, null, TestContext.Current.CancellationToken);
 
         // Assert
-        _transport.Verify(x => x.PublishAsync(message, It.IsAny<MessageMetadata>(), CancellationToken.None), Times.Once);
+        _transport.Verify(x => x.PublishAsync(message, It.IsAny<MessageMetadata>(), TestContext.Current.CancellationToken), Times.Once);
     }
 
 
@@ -96,11 +96,11 @@ public class ServiceBusTests
         // Arrange
 
         // Act
-        await _bus.StartAsync(CancellationToken.None);
-        await _bus.StartAsync(CancellationToken.None);
+        await _bus.StartAsync(TestContext.Current.CancellationToken);
+        await _bus.StartAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        _transport.Verify(x => x.StartAsync(CancellationToken.None), Times.Once);
+        _transport.Verify(x => x.StartAsync(TestContext.Current.CancellationToken), Times.Once);
     }
 
     [Fact]
@@ -109,11 +109,11 @@ public class ServiceBusTests
         // Arrange
 
         // Act
-        await _bus.StopAsync(CancellationToken.None);
-        await _bus.StopAsync(CancellationToken.None);
+        await _bus.StopAsync(TestContext.Current.CancellationToken);
+        await _bus.StopAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        _transport.Verify(x => x.StopAsync(CancellationToken.None), Times.Never);
+        _transport.Verify(x => x.StopAsync(TestContext.Current.CancellationToken), Times.Never);
     }
 
     [Fact]
@@ -122,11 +122,11 @@ public class ServiceBusTests
         // Arrange
 
         // Act
-        await _bus.StartAsync();
-        await _bus.StopAsync(CancellationToken.None);
+        await _bus.StartAsync(TestContext.Current.CancellationToken);
+        await _bus.StopAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        _transport.Verify(x => x.StopAsync(CancellationToken.None), Times.Once);
+        _transport.Verify(x => x.StopAsync(TestContext.Current.CancellationToken), Times.Once);
     }
 
     [Fact]
@@ -135,11 +135,11 @@ public class ServiceBusTests
         // Arrange
 
         // Act
-        await _bus.StartAsync();
-        await _bus.StopAsync(CancellationToken.None);
+        await _bus.StartAsync(TestContext.Current.CancellationToken);
+        await _bus.StopAsync(TestContext.Current.CancellationToken);
 
         // Assert
-        _transport.Verify(x => x.StopAsync(CancellationToken.None), Times.Once);
+        _transport.Verify(x => x.StopAsync(TestContext.Current.CancellationToken), Times.Once);
     }
 
     [Fact]

@@ -38,7 +38,7 @@ public class DemoTransportTests
         _transport.RegisterHandler(handler.Object);
 
         // Act
-        await _transport.SendAsync(message, metadata, CancellationToken.None);
+        await _transport.SendAsync(message, metadata, TestContext.Current.CancellationToken);
 
         // Assert
         handler.Verify(x => x.HandleAsync(message, It.IsAny<MessageContext>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -58,7 +58,7 @@ public class DemoTransportTests
         _transport.RegisterHandler(handler2.Object);
 
         // Act
-        await _transport.PublishAsync(message, metadata, CancellationToken.None);
+        await _transport.PublishAsync(message, metadata, TestContext.Current.CancellationToken);
 
         // Assert
         handler1.Verify(x => x.HandleAsync(message, It.IsAny<MessageContext>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -99,7 +99,7 @@ public class DemoTransportTests
         // Act
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.SendAsync(message, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.SendAsync(message, metadata, TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public class DemoTransportTests
         // Act
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.PublishAsync(message, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.PublishAsync(message, metadata, TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public class DemoTransportTests
         // Act
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.SendAsync(message, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.SendAsync(message, metadata, TestContext.Current.CancellationToken));
     }
 
 
@@ -146,7 +146,7 @@ public class DemoTransportTests
         _transport.RegisterHandler(mockHandler.Object);
 
         // Act
-        await _transport.SendAsync(message, metadata, CancellationToken.None);
+        await _transport.SendAsync(message, metadata, TestContext.Current.CancellationToken);
 
         // Assert
         // no exception
@@ -166,7 +166,7 @@ public class DemoTransportTests
         _transport.RegisterHandler(mockHandler.Object);
 
         // Act
-        await _transport.SendAsync(message, metadata, CancellationToken.None);
+        await _transport.SendAsync(message, metadata, TestContext.Current.CancellationToken);
 
         // Assert
         // no exception
@@ -185,7 +185,7 @@ public class DemoTransportTests
         _transport.RegisterHandler(mockHandler.Object);
 
         // Act
-        await _transport.PublishAsync(message, metadata, CancellationToken.None);
+        await _transport.PublishAsync(message, metadata, TestContext.Current.CancellationToken);
 
         // Assert
         // no exception
@@ -239,7 +239,7 @@ public class DemoTransportTests
         // Arrange
 
         // Act
-        await _transport.StartAsync(CancellationToken.None);
+        await _transport.StartAsync(TestContext.Current.CancellationToken);
 
         // Assert
     }
@@ -250,7 +250,7 @@ public class DemoTransportTests
         // Arrange
 
         // Act
-        await _transport.StopAsync(CancellationToken.None);
+        await _transport.StopAsync(TestContext.Current.CancellationToken);
 
         // Assert
     }
