@@ -212,7 +212,7 @@ public class DemoTransportTests
         _transport.RegisterHandler(handler.Object);
 
         // Act
-        await _transport.SendAsync(message);
+        await _transport.SendAsync(message, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         handler.Verify(x => x.HandleAsync(message, It.IsAny<MessageContext>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -227,7 +227,7 @@ public class DemoTransportTests
         _transport.RegisterHandler(handler.Object);
 
         // Act
-        await _transport.PublishAsync(message);
+        await _transport.PublishAsync(message, cancellationToken: TestContext.Current.CancellationToken);
 
         // Assert
         handler.Verify(x => x.HandleAsync(message, It.IsAny<MessageContext>(), It.IsAny<CancellationToken>()), Times.Once);
