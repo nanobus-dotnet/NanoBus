@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using FluentAssertions;
-using FluentAssertions.Execution;
 using Moq;
 using NanoBus.Abstractions;
+using Shouldly;
 
 namespace NanoBus.UnitTests;
 
@@ -42,7 +41,33 @@ public class MessageContextTests
     }
 
     [Fact]
-    public void NullCtorValues_CreatesDefaultOptions()
+    public void NullCtorMessageId_CreatesDefaultMessageId()
+    {
+        // Arrange
+        var transport = new Mock<ITransport>();
+        var context = new MessageContext(transport.Object, null);
+
+        // Act
+
+        // Assert
+        context.MessageId.ShouldNotBe(Guid.Empty.ToString());
+    }
+
+    [Fact]
+    public void NullCtorCorrelationId_CreatesDefaultCorrelationId()
+    {
+        // Arrange
+        var transport = new Mock<ITransport>();
+        var context = new MessageContext(transport.Object, null, null);
+
+        // Act
+
+        // Assert
+        context.CorrelationId.ShouldNotBe(Guid.Empty.ToString());
+    }
+
+    [Fact]
+    public void NullCtorHeaders_CreatesDefaultHeaders()
     {
         // Arrange
         var transport = new Mock<ITransport>();
@@ -51,11 +76,6 @@ public class MessageContextTests
         // Act
 
         // Assert
-        using (new AssertionScope())
-        {
-            context.MessageId.Should().NotBe(Guid.Empty.ToString());
-            context.CorrelationId.Should().NotBe(Guid.Empty.ToString());
-            context.Headers.Should().NotBeNull();
-        }
+        context.Headers.ShouldNotBeNull();
     }
 }

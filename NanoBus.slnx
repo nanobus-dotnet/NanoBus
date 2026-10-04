@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/Core/">
+    <Project Path="src/NanoBus.Abstractions/NanoBus.Abstractions.csproj" />
     <Project Path="src/NanoBus.Core.DependencyInjection/NanoBus.Core.DependencyInjection.csproj" Id="88c3a854-942a-4256-841b-3b6d98ae7992" />
     <Project Path="src/NanoBus.Core.SourceGeneration/NanoBus.Core.SourceGeneration.csproj" />
     <Project Path="src/NanoBus.Core/NanoBus.Core.csproj" />
@@ -9,11 +10,12 @@
     <Project Path="examples/NanoBus.Examples.DemoInjection/NanoBus.Examples.DemoInjection.csproj" Id="85fd28a0-e433-4825-aadc-b3a9ca6a1aca" />
     <Project Path="examples/NanoBus.Examples.DemoSourceGen/NanoBus.Examples.DemoSourceGen.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/NanoBus.UnitTests/NanoBus.UnitTests.csproj" />
+  </Folder>
   <Folder Name="/Transports/">
     <Project Path="src/NanoBus.Transports.Demo.DependencyInjection/NanoBus.Transports.Demo.DependencyInjection.csproj" Id="84429818-cf14-4494-99c7-f55df231ab5c" />
     <Project Path="src/NanoBus.Transports.Demo.SourceGeneration/NanoBus.Transports.Demo.SourceGeneration.csproj" />
     <Project Path="src/NanoBus.Transports.Demo/NanoBus.Transports.Demo.csproj" />
   </Folder>
-  <Project Path="tests/NanoBus.UnitTests/NanoBus.UnitTests.csproj" />
-  <Project Path="src/NanoBus.Abstractions/NanoBus.Abstractions.csproj" />
 </Solution>
