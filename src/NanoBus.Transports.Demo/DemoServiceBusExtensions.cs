@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NanoBus.Abstractions;
-using NanoBus.Core.DependencyInjection;
+using NanoBus.Core;
 
-namespace NanoBus.Transports.Demo.DependencyInjection;
+namespace NanoBus.Transports.Demo;
 
 /// <summary>
 /// Extensions for the demo transport.
@@ -25,7 +25,7 @@ public static class DemoServiceBusExtensions
 
         services.AddSingleton<ITransport, DemoTransport>(sp =>
         {
-            var logger = sp.GetRequiredService<ILogger<DemoTransport>>();
+            var logger = sp.GetService<ILogger<DemoTransport>>();
             var transportOptions = new TransportOptions();
             options?.Invoke(transportOptions);
             return new DemoTransport(transportOptions, logger);

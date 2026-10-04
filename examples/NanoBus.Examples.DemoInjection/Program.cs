@@ -1,6 +1,6 @@
 using NanoBus.Examples.DemoInjection;
 using NanoBus.Examples.DemoInjection.Handlers;
-using NanoBus.Transports.Demo.DependencyInjection;
+using NanoBus.Transports.Demo;
 using Serilog;
 
 var builder = Host.CreateApplicationBuilder(args);

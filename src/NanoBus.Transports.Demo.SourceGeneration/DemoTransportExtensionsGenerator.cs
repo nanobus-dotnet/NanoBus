@@ -25,8 +25,8 @@ public class DemoTransportExtensionsGenerator : IIncrementalGenerator
                     using System;
                     using Microsoft.Extensions.DependencyInjection;
                     using NanoBus.Abstractions;
-                    using NanoBus.Core.DependencyInjection;
-                    using NanoBus.Transports.Demo.DependencyInjection;
+                    using NanoBus.Core;
+                    using NanoBus.Transports.Demo;
                     
                     public static class DemoTransportExtensions
                     {

@@ -1,8 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NanoBus.Abstractions;
 using NanoBus.Core;
+using NanoBus.Transports.Demo;
+using Shouldly;
 
 namespace NanoBus.UnitTests;
 
@@ -122,7 +125,7 @@ public class ServiceBusTests
         // Arrange
 
         // Act
-        await _bus.StartAsync();
+        await _bus.StartAsync(CancellationToken.None);
         await _bus.StopAsync(CancellationToken.None);
 
         // Assert
@@ -135,7 +138,7 @@ public class ServiceBusTests
         // Arrange
 
         // Act
-        await _bus.StartAsync();
+        await _bus.StartAsync(CancellationToken.None);
         await _bus.StopAsync(CancellationToken.None);
 
         // Assert
@@ -152,5 +155,79 @@ public class ServiceBusTests
 
         // Assert
         Assert.NotNull(bus);
+    }
+
+    [Fact]
+    public void Extension_AddServiceBusDefault()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton(new Mock<ITransport>().Object);
+
+        // Act
+        services.AddServiceBus();
+        var provider = services.BuildServiceProvider();
+
+        var bus = provider.GetRequiredService<IServiceBus>();
+
+        // Assert
+        bus.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Extension_AddServiceBus()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton(new Mock<ITransport>().Object);
+
+        // Act
+        services.AddServiceBus((sp, t) =>
+        {
+            using var scope = sp.CreateScope();
+            t.RegisterHandler(new TestMessageHandler());
+        });
+
+        var provider = services.BuildServiceProvider();
+        var bus = provider.GetRequiredService<IServiceBus>();
+
+        // Assert
+        bus.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Extension_AddDemoServiceBusDefault()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddDemoServiceBus();
+
+        var provider = services.BuildServiceProvider();
+        var bus = provider.GetRequiredService<IServiceBus>();
+
+        // Assert
+        bus.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void Extension_AddDemoServiceBus()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        services.AddDemoServiceBus(options => options.MaxRetries = 5, (sp, t) =>
+        {
+            using var scope = sp.CreateScope();
+            t.RegisterHandler(new TestMessageHandler());
+        });
+
+        var provider = services.BuildServiceProvider();
+        var bus = provider.GetRequiredService<IServiceBus>();
+
+        // Assert
+        bus.ShouldNotBeNull();
     }
 }

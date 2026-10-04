@@ -38,7 +38,7 @@
 	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NanoBus.Abstractions\NanoBus.Abstractions.csproj" />
+    <ProjectReference Include="..\NanoBus.Core\NanoBus.Core.csproj" />
   </ItemGroup>
 
 </Project>
