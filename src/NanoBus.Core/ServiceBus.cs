@@ -16,7 +16,7 @@ public class ServiceBus(ITransport transport, ILogger<ServiceBus>? logger = null
     private bool _isStarted;
 
     /// <inheritdoc />
-    public async Task PublishAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
+    public async ValueTask PublishAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
     {
         metadata ??= new MessageMetadata();
 
@@ -27,7 +27,7 @@ public class ServiceBus(ITransport transport, ILogger<ServiceBus>? logger = null
     }
 
     /// <inheritdoc />
-    public async Task SendAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
+    public async ValueTask SendAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
     {
         metadata ??= new MessageMetadata();
         await _transport.SendAsync(message, metadata, cancellationToken)
@@ -37,7 +37,7 @@ public class ServiceBus(ITransport transport, ILogger<ServiceBus>? logger = null
     }
 
     /// <inheritdoc />
-    public async Task StartAsync(CancellationToken cancellationToken = default)
+    public async ValueTask StartAsync(CancellationToken cancellationToken = default)
     {
         if (_isStarted)
         {
@@ -53,7 +53,7 @@ public class ServiceBus(ITransport transport, ILogger<ServiceBus>? logger = null
     }
 
     /// <inheritdoc />
-    public async Task StopAsync(CancellationToken cancellationToken = default)
+    public async ValueTask StopAsync(CancellationToken cancellationToken = default)
     {
         if (!_isStarted)
         {

@@ -7,7 +7,7 @@ public class CreateSalesOrderHandler(ILogger<CreateSalesOrderHandler> logger) : 
 {
     private readonly ILogger<CreateSalesOrderHandler> _logger = logger;
 
-    public async Task HandleAsync(CreateSalesOrderCommand message, MessageContext context, CancellationToken cancellationToken = default)
+    public async ValueTask HandleAsync(CreateSalesOrderCommand message, MessageContext context, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Received MessageId: {MessageId} CorrelationId: {CorrelationId}", context.MessageId, context.CorrelationId);
         _logger.LogInformation("Creating sales order: {OrderNumber} '{CustomerName}' {OrderDate} Total: {TotalAmount:C}", message.OrderNumber, message.CustomerName, message.OrderDate, message.TotalAmount);

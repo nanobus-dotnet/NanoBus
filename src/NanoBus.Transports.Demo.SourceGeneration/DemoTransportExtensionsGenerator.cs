@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.Text;
 [Generator]
 public class DemoTransportExtensionsGenerator : IIncrementalGenerator
 {
+    /// <inheritdoc />
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         // If this is enabled, a debugger prompt will be displayed when the solution is build.

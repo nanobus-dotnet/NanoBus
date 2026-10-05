@@ -18,26 +18,26 @@ public class TestMessage2 : IMessage
 [ExcludeFromCodeCoverage]
 public class TestMessageHandler : IMessageHandler<TestMessage>
 {
-    public Task HandleAsync(TestMessage message, MessageContext context, CancellationToken cancellationToken)
+    public ValueTask HandleAsync(TestMessage message, MessageContext context, CancellationToken cancellationToken)
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }
 
 [ExcludeFromCodeCoverage]
 public class TestMessageHandler2 : IMessageHandler<TestMessage>
 {
-    public Task HandleAsync(TestMessage message, MessageContext context, CancellationToken cancellationToken)
+    public ValueTask HandleAsync(TestMessage message, MessageContext context, CancellationToken cancellationToken)
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }
 
 [ExcludeFromCodeCoverage]
 public class TestMessage2Handler : IMessageHandler<TestMessage2>
 {
-    public Task HandleAsync(TestMessage2 message, MessageContext context, CancellationToken cancellationToken)
+    public ValueTask HandleAsync(TestMessage2 message, MessageContext context, CancellationToken cancellationToken)
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }

@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+	<OutputType>Library</OutputType>
+	<!-- Generators MUST target netstandard2.0 to run in all host environments -->
+	<TargetFramework>netstandard2.0</TargetFramework>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<LangVersion>latest</LangVersion>
+	<Nullable>enable</Nullable>
+	<CompileDesignTime>true</CompileDesignTime>
+	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+	<IsRoslynComponent>true</IsRoslynComponent>
+
+	<!-- Package metadata -->
+	<PackageId>NanoBus.Transports.InMemory.SourceGeneration</PackageId>
+	<Title>NanoBus In-Memory Transport Source Generation</Title>
+	<Version>0.0.1-alpha.1</Version>
+	<Description>Source generation for the NanoBus In-Memory Transport.</Description>
+	<Authors>Wayland Young</Authors>
+	<RepositoryUrl>https://github.com/nanobus-dotnet/nanobus</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+	<License>MIT</License>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+	<!-- PrivateAssets="all" prevents these from becoming transitive dependencies -->
+	<!-- Use the version bundled with your SDK; for .NET 10, that is 4.12.0 or later -->
+	<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="all" />
+	<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+	<PackageReference Include="System.Text.Json" Version="10.0.12" />
+  </ItemGroup>
+
+  <!-- Including README.md -->
+  <ItemGroup>
+	<None Include="../../README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

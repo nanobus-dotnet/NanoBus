@@ -6,10 +6,23 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-	<!--<CompileDesignTime>true</CompileDesignTime>-->
-    <!--<TreatWarningsAsErrors>true</TreatWarningsAsErrors>-->
+	<CompileDesignTime>true</CompileDesignTime>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <IsRoslynComponent>true</IsRoslynComponent>
+
+	<!-- Package metadata -->
+	<PackageId>NanoBus.Transports.Demo.SourceGeneration</PackageId>
+	<Title>NanoBus Demo Transport Source Generation</Title>
+	<Version>0.0.1-alpha.1</Version>
+	<Description>Source generation for the NanoBus Demo Transport.</Description>
+	<Authors>Wayland Young</Authors>
+	<RepositoryUrl>https://github.com/nanobus-dotnet/nanobus</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+	<License>MIT</License>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,8 +36,5 @@
   <!-- Including README.md -->
   <ItemGroup>
 	<None Include="../../README.md" Pack="true" PackagePath="\" />
-  </ItemGroup>
-  <ItemGroup>
-    <!--<ProjectReference Include="..\NanoBus.Core.SourceGeneration\NanoBus.Core.SourceGeneration.csproj" />-->
   </ItemGroup>
 </Project>

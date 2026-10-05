@@ -31,7 +31,7 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
 
     }
     /// <inheritdoc />
-    public async Task PublishAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
+    public async ValueTask PublishAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
     {
         var typeName = message.GetType().FullName!;
 
@@ -66,7 +66,7 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
     }
 
     /// <inheritdoc />
-    public async Task SendAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
+    public async ValueTask SendAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
     {
         var typeName = message.GetType().FullName!;
 
@@ -102,14 +102,14 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
     }
 
     /// <inheritdoc />
-    public Task StartAsync(CancellationToken cancellationToken = default)
+    public ValueTask StartAsync(CancellationToken cancellationToken = default)
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    public Task StopAsync(CancellationToken cancellationToken = default)
+    public ValueTask StopAsync(CancellationToken cancellationToken = default)
     {
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 }

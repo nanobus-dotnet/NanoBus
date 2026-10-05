@@ -7,7 +7,7 @@ public class RetryHandler(ILogger<RetryHandler> logger) : IMessageHandler<OrderC
 {
     private readonly ILogger<RetryHandler> _logger = logger;
 
-    public Task HandleAsync(OrderConfirmedEvent message, MessageContext context, CancellationToken cancellationToken = default)
+    public ValueTask HandleAsync(OrderConfirmedEvent message, MessageContext context, CancellationToken cancellationToken = default)
     {
 		try
 		{

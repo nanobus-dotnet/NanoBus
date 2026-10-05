@@ -74,7 +74,7 @@ public class DemoTransportTests
         var transport = new Mock<ITransport>();
         transport.Setup(t => t.PublishAsync(It.IsAny<TestMessage>(), It.IsAny<MessageMetadata>(), It.IsAny<CancellationToken>()))
             .Callback((TestMessage _, MessageMetadata _, CancellationToken ct) => capturedToken = ct)
-            .Returns(Task.CompletedTask);
+            .Returns(ValueTask.CompletedTask);
 
         var message = new TestMessage { Value = "test" };
         var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
@@ -99,7 +99,7 @@ public class DemoTransportTests
         // Act
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.SendAsync(message, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.SendAsync(message, metadata, CancellationToken.None).AsTask());
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public class DemoTransportTests
         // Act
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.PublishAsync(message, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.PublishAsync(message, metadata, CancellationToken.None).AsTask());
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public class DemoTransportTests
         // Act
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.SendAsync(message, metadata, CancellationToken.None));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.SendAsync(message, metadata, CancellationToken.None).AsTask());
     }
 
 
