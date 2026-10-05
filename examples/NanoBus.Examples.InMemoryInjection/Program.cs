@@ -1,0 +1,37 @@
+using NanoBus.Examples.InMemoryInjection;
+using NanoBus.Examples.InMemoryInjection.Handlers;
+using NanoBus.Transports.InMemory;
+//using NanoBus.Transports.Demo.DependencyInjection;
+using Serilog;
+
+var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services.AddSerilog(configure =>
+{
+    configure.MinimumLevel
+        .Debug()
+        .WriteTo.Console();
+});
+
+builder.Services.AddScoped<CreateSalesOrderHandler>();
+builder.Services.AddScoped<OrderConfirmedHandler>();
+builder.Services.AddScoped<RetryHandler>();
+
+builder.Services.AddInMemoryServiceBus(null, (provider, transport) =>
+{
+    using var scope = provider.CreateScope();
+    var createOrderHandler = scope.ServiceProvider.GetRequiredService<CreateSalesOrderHandler>();
+    var orderConfirmedHandler = scope.ServiceProvider.GetRequiredService<OrderConfirmedHandler>();
+    var retryHandler = scope.ServiceProvider.GetRequiredService<RetryHandler>();
+
+    transport.RegisterHandler(createOrderHandler);
+    transport.RegisterHandler(orderConfirmedHandler);
+
+    // Uncomment this line to see retries.
+    //transport.RegisterHandler(retryHandler);
+});
+
+builder.Services.AddHostedService<Worker>();
+
+var host = builder.Build();
+host.Run();
