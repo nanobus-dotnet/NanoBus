@@ -14,6 +14,8 @@ The rough structure of NanoBus code is the following:
 - `NanoBus.Core` - Core implementations.
 - `NanoBus.Transports.Demo` - Simple implementation for demoing/learning NanoBus.
 - `NanoBus.Transports.Demo.SourceGeneration` - Source generation for the demo transport implementation.
+- - `NanoBus.Transports.InMemory` - In-memory implementation of NanoBus.
+- `NanoBus.Transports.InMemory.SourceGeneration` - Source generation for the in-memory transport implementation.
 
 Other NanoBus enhancements and transport implementations will follow. Outbox and saga support may be implemented depending on demand or time available.
 
