@@ -67,4 +67,45 @@ public class ServiceBus(ITransport transport, ILogger<ServiceBus>? logger = null
 
         _logger.LogInformation("Service Bus stopped.");
     }
+
+    /// <inheritdoc />
+    public async ValueTask ReprocessDeadLetterQueueAsync(CancellationToken cancellationToken = default)
+    {
+        await _transport.ReprocessDeadLetterQueueAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        _logger.LogInformation("Reprocessed DLQ messages.");
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<IEnumerable<FailedMessage>> GetDeadLetterMessagesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _transport.GetDeadLetterMessagesAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask ReprocessDeadLetterMessageAsync(string uniqueId, CancellationToken cancellationToken = default)
+    {
+        await _transport.ReprocessDeadLetterMessageAsync(uniqueId, cancellationToken)
+            .ConfigureAwait(false);
+
+        _logger.LogInformation("Reprocessed DLQ message {UniqueId}", uniqueId);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<IEnumerable<FailedMessage>> GetFailedDeadLetterMessagesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _transport.GetFailedDeadLetterMessagesAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask ClearDeadLetterQueueAsync(CancellationToken cancellationToken = default)
+    {
+        await _transport.ClearDeadLetterQueueAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        _logger.LogInformation("Cleared DLQ.");
+    }
 }

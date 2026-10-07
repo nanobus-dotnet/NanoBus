@@ -27,13 +27,43 @@ public interface IServiceBus
     /// The method that starts the service bus.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
     ValueTask StartAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// The method that stops the service bus.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
     ValueTask StopAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all failure messages in the DLQ.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    ValueTask<IEnumerable<FailedMessage>> GetDeadLetterMessagesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all completely failed messages in the DLQ.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    ValueTask<IEnumerable<FailedMessage>> GetFailedDeadLetterMessagesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Immediately reprocesses all messages in the DLQ at the next interval.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    ValueTask ReprocessDeadLetterQueueAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Reprocesses a single item in the DLQ.
+    /// </summary>
+    /// <param name="uniqueId">The unique id of the item to process.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    ValueTask ReprocessDeadLetterMessageAsync(string uniqueId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Clears the entire dead letter queue.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    ValueTask ClearDeadLetterQueueAsync(CancellationToken cancellationToken = default);
+
 }

@@ -1,7 +1,7 @@
-﻿using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NanoBus.Abstractions;
+using NanoBus.Core;
 
 namespace NanoBus.Transports.Demo;
 
@@ -14,37 +14,23 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
 {
     private readonly TransportOptions _options = options ?? new();
     private readonly ILogger<DemoTransport> _logger = logger ?? NullLogger<DemoTransport>.Instance;
-    private readonly ConcurrentDictionary<string, ConcurrentBag<Func<IMessage, MessageContext, CancellationToken, Task>>> _handlers = [];
+    private readonly MessageHandlerRegistry _handlerRegistry = new(logger);
 
     /// <inheritdoc />
     public void RegisterHandler<T>(IMessageHandler<T> handler) where T : IMessage
     {
-        if (handler is null)
-            throw new InvalidOperationException("Null handlers are not allowed.");
-
-        var messageType = typeof(T).FullName!;
-
-        var typeHandlers = _handlers.GetOrAdd(messageType, _ => []);
-        typeHandlers.Add(async (msg, ctx, ct) => await handler.HandleAsync((T)msg, ctx, ct));
-
-        _logger.LogInformation("Registered handler type '{HandlerType}'", handler.GetType().FullName!);
-
+        _handlerRegistry.RegisterHandler(handler);
     }
+
     /// <inheritdoc />
     public async ValueTask PublishAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
     {
-        var typeName = message.GetType().FullName!;
-
-        if (!_handlers.TryGetValue(typeName, out var typeHandlers))
-        {
-            _logger.LogError("No handlers registered for type '{MessageType}'", typeName);
-            throw new InvalidOperationException($"No handlers registered for type '{typeName}'");
-        }
+        var messageType = message.GetType().FullName!;
 
         var context = new MessageContext(this, metadata?.MessageId, metadata?.CorrelationId, metadata?.Headers);
 
 
-        foreach (var handler in typeHandlers)
+        foreach (var handler in _handlerRegistry.GetHandlers(messageType))
         {
             var retries = _options.MaxRetries;
 
@@ -68,17 +54,13 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
     /// <inheritdoc />
     public async ValueTask SendAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
     {
-        var typeName = message.GetType().FullName!;
+        var messageType = message.GetType().FullName!;
 
-        if (!_handlers.TryGetValue(typeName, out var typeHandlers))
-        {
-            _logger.LogError("No handlers registered for type '{MessageType}'", typeName);
-            throw new InvalidOperationException($"No handlers registered for type '{typeName}");
-        }
+        var typeHandlers = _handlerRegistry.GetHandlers(messageType);
 
         if (typeHandlers.Count > 1)
         {
-            _logger.LogWarning("More than one handler registered for message type '{MessageType}'. Only the last handler registered will receive the message.", typeName);
+            _logger.LogWarning("More than one handler registered for message type '{MessageType}'. Only the last handler registered will receive the message.", messageType);
         }
 
         var context = new MessageContext(this, metadata?.MessageId, metadata?.CorrelationId, metadata?.Headers);
@@ -102,13 +84,49 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
     }
 
     /// <inheritdoc />
-    public ValueTask StartAsync(CancellationToken cancellationToken = default)
+    public Task StartAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public Task StopAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public ValueTask<IEnumerable<FailedMessage>> GetDeadLetterMessagesAsync(CancellationToken cancellationToken = default)
+    {
+        return ValueTask.FromResult<IEnumerable<FailedMessage>>([]);
+    }
+
+    /// <inheritdoc />
+    public ValueTask ReprocessDeadLetterQueueAsync(CancellationToken cancellationToken = default)
     {
         return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    public ValueTask StopAsync(CancellationToken cancellationToken = default)
+    public ValueTask ReprocessDeadLetterMessageAsync(string uniqueId, CancellationToken cancellationToken = default)
+    {
+        return ValueTask.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public ValueTask<IEnumerable<FailedMessage>> GetFailedDeadLetterMessagesAsync(CancellationToken cancellationToken = default)
+    {
+        return ValueTask.FromResult<IEnumerable<FailedMessage>>([]);
+    }
+
+    /// <inheritdoc />
+    public Task ProcessDeadLetterQueueAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public ValueTask ClearDeadLetterQueueAsync(CancellationToken cancellationToken = default)
     {
         return ValueTask.CompletedTask;
     }

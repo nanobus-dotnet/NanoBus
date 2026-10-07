@@ -1,4 +1,4 @@
-﻿namespace NanoBus.Transports.InMemory;
+﻿namespace NanoBus.Abstractions;
 
 
 /// <summary>

@@ -9,7 +9,7 @@ public class Worker(IServiceBus serviceBus, ILogger<Worker> logger) : Background
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _serviceBus.StartAsync();
+        await _serviceBus.StartAsync(stoppingToken);
         await Task.Delay(TimeSpan.FromMilliseconds(10), stoppingToken); // Allow startup messages to be logged to the console.
 
         _logger.LogInformation("Processing sales orders");

@@ -34,13 +34,50 @@ public interface ITransport
     /// The method that starts the transport.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The task result.</returns>
-    ValueTask StartAsync(CancellationToken cancellationToken = default);
+    Task StartAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// The method that stops the transport.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>the Task result.</returns>
-    ValueTask StopAsync(CancellationToken cancellationToken = default);
+    Task StopAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all failure messages in the dead letter queue.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>All failed messages in the DLQ.</returns>
+    ValueTask<IEnumerable<FailedMessage>> GetDeadLetterMessagesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets all completely failed messages in the dead letter queue.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>All completely failed messages in the DLQ.</returns>
+    ValueTask<IEnumerable<FailedMessage>> GetFailedDeadLetterMessagesAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Immediately reprocesses all messages in the dead letter queue at the next interval.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    ValueTask ReprocessDeadLetterQueueAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Reprocesses a single item in the dead letter queue.
+    /// </summary>
+    /// <param name="uniqueId">The unique id of the item to process.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    ValueTask ReprocessDeadLetterMessageAsync(string uniqueId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retries failed messages in the dead letter queue.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    Task ProcessDeadLetterQueueAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Clears the entire dead letter queue.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    ValueTask ClearDeadLetterQueueAsync(CancellationToken cancellationToken = default);
 }

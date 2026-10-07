@@ -1,10 +1,9 @@
-﻿using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NanoBus.Abstractions;
+using NanoBus.Core;
 
 namespace NanoBus.Transports.InMemory;
-
 
 /// <summary>
 /// In-memory transport which uses Channels rather than physical transports.
@@ -14,15 +13,15 @@ public partial class InMemoryTransport : ITransport
     private readonly InMemoryTransportOptions _options;
     private readonly ILogger<InMemoryTransport> _logger;
 
-
+    /// <summary>
+    /// The manager of message delivery channels.
+    /// </summary>
     private readonly ChannelManager _channelManager;
 
     /// <summary>
-    /// Stores the message handlers by message type.
+    /// The queue where undeliverable messages are stored.
     /// </summary>
-    private readonly ConcurrentDictionary<string, ConcurrentBag<Func<IMessage, MessageContext, CancellationToken, Task>>> _handlers = [];
-
-    private readonly DeadLetterQueueManager _dlqManager;
+    private readonly IDeadLetterQueue _deadLetterQueue;
 
     /// <summary>
     /// The background task that delivers messages.
@@ -37,32 +36,31 @@ public partial class InMemoryTransport : ITransport
     /// <summary>
     /// The token source used to cancel the background message delivery and DLQ tasks.
     /// </summary>
-    private readonly CancellationTokenSource _tokenSource = new();
+    private readonly CancellationTokenSource _tokenSource;
 
+    /// <summary>
+    /// The registry where message handlers are stored.
+    /// </summary>
+    private readonly MessageHandlerRegistry _handlerRegistry;
+
+
+    /// <param name="deadLetterQueue">The dead letter queue.</param>
     /// <param name="options">The options used.</param>
     /// <param name="logger">The logger.</param>
-    public InMemoryTransport(InMemoryTransportOptions? options = null, ILogger<InMemoryTransport>? logger = null)
+    public InMemoryTransport(IDeadLetterQueue deadLetterQueue, InMemoryTransportOptions? options = null, ILogger<InMemoryTransport>? logger = null)
     {
         _options = options ?? new();
         _logger = logger ?? NullLogger<InMemoryTransport>.Instance;
         _channelManager = new(_options.MaxChannelCapacity);
-        _dlqManager = new(_logger) { MaxRetries = _options.MaxRetries };
+        _deadLetterQueue = deadLetterQueue;
+        _handlerRegistry = new MessageHandlerRegistry(logger);
+        _tokenSource = new CancellationTokenSource();
     }
-
 
     /// <inheritdoc />
     public void RegisterHandler<T>(IMessageHandler<T> handler) where T : IMessage
     {
-        if (handler is null)
-            throw new InvalidOperationException("Null handlers are not allowed.");
-
-        var messageType = typeof(T).FullName!;
-
-        var typeHandlers = _handlers.GetOrAdd(messageType, _ => []);
-        typeHandlers.Add(async (msg, ctx, ct) => await handler.HandleAsync((T)msg, ctx, ct));
-
-        _logger.LogInformation("Registered handler type '{HandlerType}'", handler.GetType().FullName!);
-
+        _handlerRegistry.RegisterHandler(handler);
     }
 
     /// <inheritdoc />
@@ -80,7 +78,7 @@ public partial class InMemoryTransport : ITransport
     }
 
     /// <inheritdoc />
-    public ValueTask StartAsync(CancellationToken cancellationToken = default)
+    public async Task StartAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -88,14 +86,12 @@ public partial class InMemoryTransport : ITransport
         _messageDeliveryTask = DeliverMessagesAsync(_tokenSource.Token);
 
         // Start the background task to retry failed messages.
-        _errorDeliveryTask = RetryFailedMessagesAsync(_tokenSource.Token);
-
-        return ValueTask.CompletedTask;
+        _errorDeliveryTask = ProcessDeadLetterQueueAsync(_tokenSource.Token);
     }
 
 
     /// <inheritdoc />
-    public async ValueTask StopAsync(CancellationToken cancellationToken = default)
+    public async Task StopAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -125,11 +121,11 @@ public partial class InMemoryTransport : ITransport
     /// <param name="cancellationToken">The token to cancel the operation.</param>
     /// <returns>The task to write to the message channel.</returns>
     /// <exception cref="InvalidOperationException"></exception>
-    private async Task WriteToChannel<T>(T message, MessageMethod method, MessageMetadata? metadata, CancellationToken cancellationToken) where T : IMessage
+    private async ValueTask WriteToChannel<T>(T message, MessageMethod method, MessageMetadata? metadata, CancellationToken cancellationToken) where T : IMessage
     {
         var messageType = message.GetType().FullName!;
 
-        if (!_handlers.ContainsKey(messageType))
+        if (!_handlerRegistry.HandlerExists(messageType))
         {
             _logger.LogError("No handlers registered for type '{MessageType}'", messageType);
             throw new InvalidOperationException($"No handlers registered for type '{messageType}'");
@@ -199,11 +195,7 @@ public partial class InMemoryTransport : ITransport
         // Read all messages in the channel.
         await foreach (var (message, method, context, retryCount, token) in _channelManager.ReadAllAsync(messageType, cancellationToken))
         {
-            if (!_handlers.TryGetValue(messageType, out var handlers))
-            {
-                _logger.LogWarning("No handlers found for message type '{MessageType}'", messageType);
-                continue;
-            }
+            var handlers = _handlerRegistry.GetHandlers(messageType);
 
             // Invoke the handlers for each message.
             try
@@ -230,10 +222,8 @@ public partial class InMemoryTransport : ITransport
             }
             catch (Exception ex)
             {
-                var backoffDelay = DeadLetterQueueManager.GetBackoffDelay(retryCount);
-                _logger.LogError(ex, "Delivery failed for MessageId: {MessageId} - Correlation Id: {CorrelationId} - MessageType: '{MessageType}'. Retrying in {Delay}", context.MessageId, context.CorrelationId, messageType, backoffDelay);
-
-                _dlqManager.Enqueue(message, messageType, method, context, token, ex);
+                await _deadLetterQueue.EnqueueAsync(message, messageType, method, context, DateTime.UtcNow, ex, token)
+                    .ConfigureAwait(false);
             }
         }
     }
@@ -244,22 +234,19 @@ public partial class InMemoryTransport : ITransport
     /// </summary>
     /// <param name="cancellationToken">The token used to cancel the task.</param>
     /// <returns>The retry task.</returns>
-    private async Task RetryFailedMessagesAsync(CancellationToken cancellationToken)
+    public async Task ProcessDeadLetterQueueAsync(CancellationToken cancellationToken = default)
     {
         try
         {
             while (!cancellationToken.IsCancellationRequested)
             {
                 // Retrieve messages from the DLQ that are ready to be retried.
-                var readyMessages = _dlqManager.GetMessagesForRetry();
+                var readyMessages = await _deadLetterQueue.GetMessagesForRetryAsync(cancellationToken)
+                    .ConfigureAwait(false);
 
-                foreach (var (id, messageType, message, method, context, retryCount, nextRetryTime, _, token) in readyMessages)
+                foreach (var (id, messageType, message, method, context, retryCount, nextRetryTime, _, _, token) in readyMessages)
                 {
-                    if (!_handlers.TryGetValue(messageType, out var handlers))
-                    {
-                        _logger.LogWarning("No handlers found for message type '{MessageType}'", messageType);
-                        continue;
-                    }
+                    var handlers = _handlerRegistry.GetHandlers(messageType);
 
                     try
                     {
@@ -283,11 +270,13 @@ public partial class InMemoryTransport : ITransport
                                 break;
                         }
 
-                        _dlqManager.Remove(id);
+                        await _deadLetterQueue.RemoveAsync(id, cancellationToken)
+                            .ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
-                        _dlqManager.UpdateMessageRetry(id, retryCount + 1, ex);
+                        await _deadLetterQueue.UpdateMessageRetryAsync(id, retryCount, ex, cancellationToken)
+                            .ConfigureAwait(false);
                     }
                 }
 
@@ -295,12 +284,60 @@ public partial class InMemoryTransport : ITransport
                 await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
             }
         }
-        catch (OperationCanceledException) // expected exception.
+        catch (OperationCanceledException)
         {
+            // Expected exception.
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Fatal error occurred delivering failed messages.");
         }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<IEnumerable<FailedMessage>> GetDeadLetterMessagesAsync(CancellationToken cancellationToken = default) 
+        => await _deadLetterQueue.GetAllMessagesAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async ValueTask ReprocessDeadLetterQueueAsync(CancellationToken cancellationToken = default)
+    {
+        foreach (var failedMessage in await _deadLetterQueue.GetAllMessagesAsync(cancellationToken)
+            .ConfigureAwait(false))
+        {
+            await _deadLetterQueue.UpdateMessageRetryAsync(failedMessage.UniqueId, 0, null, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        _logger.LogInformation("All DLQ messages reprocessed.");
+    }
+
+    /// <inheritdoc />
+    public async ValueTask ReprocessDeadLetterMessageAsync(string uniqueId, CancellationToken cancellationToken = default)
+    {
+        var message = await _deadLetterQueue.GetMessageAsync(uniqueId, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (message is null)
+            return;
+
+        var context = message.Context;
+
+        await _deadLetterQueue.UpdateMessageRetryAsync(message.UniqueId, 0, null, cancellationToken)
+            .ConfigureAwait(false);
+
+        _logger.LogInformation("Reprocessed failed DLQ message - {UniqueId} - MessageId: {MessageId} - CorrelationId: {CorrelationId}", uniqueId, context.MessageId, context.CorrelationId);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<IEnumerable<FailedMessage>> GetFailedDeadLetterMessagesAsync(CancellationToken cancellationToken = default)
+        => await _deadLetterQueue.GetAllFailedMessagesAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async ValueTask ClearDeadLetterQueueAsync(CancellationToken cancellationToken = default)
+    {
+        await _deadLetterQueue.ClearQueueAsync(cancellationToken)
+            .ConfigureAwait(false);
     }
 }
