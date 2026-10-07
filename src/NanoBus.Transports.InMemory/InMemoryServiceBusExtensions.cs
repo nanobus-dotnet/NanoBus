@@ -28,7 +28,7 @@ public static class InMemoryServiceBusExtensions
             var logger = sp.GetService<ILogger<InMemoryTransport>>();
             var transportOptions = new InMemoryTransportOptions();
             options?.Invoke(transportOptions);
-            return new InMemoryTransport(transportOptions, logger);
+            return new InMemoryTransport(new InMemoryDeadLetterQueue { MaxRetries = transportOptions.MaxRetries }, transportOptions, logger);
         });
 
         return services;
