@@ -1,10 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.Logging;
-using Moq;
-using NanoBus.Abstractions;
-using NanoBus.Transports.Demo;
-
-namespace NanoBus.UnitTests.Transports;
+﻿namespace NanoBus.UnitTests.Transports;
 
 [ExcludeFromCodeCoverage]
 public class DemoTransportTests
@@ -34,7 +28,7 @@ public class DemoTransportTests
         // Arrange
         var message = new TestMessage { Value = "test" };
         var handler = new Mock<IMessageHandler<TestMessage>>();
-        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
+        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "correlation-1", Headers = [] };
         _transport.RegisterHandler(handler.Object);
 
         // Act
@@ -49,7 +43,7 @@ public class DemoTransportTests
     {
         // Arrange
         var message = new TestMessage { Value = "test" };
-        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
+        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "correlation-1", Headers = [] };
         var handler1 = new Mock<IMessageHandler<TestMessage>>();
         var handler2 = new Mock<IMessageHandler<TestMessage>>();
         var handlers = new[] { handler1.Object, handler2.Object };
@@ -77,7 +71,7 @@ public class DemoTransportTests
             .Returns(ValueTask.CompletedTask);
 
         var message = new TestMessage { Value = "test" };
-        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
+        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "correlation-1", Headers = [] };
 
         var cts = new CancellationTokenSource();
 
@@ -94,12 +88,13 @@ public class DemoTransportTests
     {
         // Arrange
         var message = new TestMessage { Value = "test" };
-        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
+        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "correlation-1", Headers = [] };
 
         // Act
 
         // Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.SendAsync(message, metadata, CancellationToken.None).AsTask());
+        await Should.ThrowAsync<InvalidOperationException>(() => _transport.SendAsync(message, metadata, CancellationToken.None).AsTask());
+        //await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.SendAsync(message, metadata, CancellationToken.None).AsTask());
     }
 
     [Fact]
@@ -107,7 +102,7 @@ public class DemoTransportTests
     {
         // Arrange
         var message = new TestMessage { Value = "test" };
-        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
+        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "correlation-1", Headers = [] };
 
         // Act
 
@@ -120,7 +115,7 @@ public class DemoTransportTests
     {
         // Arrange
         var message = new TestMessage { Value = "test" };
-        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
+        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "correlation-1", Headers = [] };
         var mockHandler = new Mock<IMessageHandler<TestMessage>>();
         mockHandler
             .Setup(x => x.HandleAsync(It.IsAny<TestMessage>(), It.IsAny<MessageContext>(), It.IsAny<CancellationToken>()))
@@ -138,7 +133,7 @@ public class DemoTransportTests
     {
         // Arrange
         var message = new TestMessage { Value = "test" };
-        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
+        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "correlation-1", Headers = [] };
         var mockHandler = new Mock<IMessageHandler<TestMessage>>();
         mockHandler
             .Setup(x => x.HandleAsync(It.IsAny<TestMessage>(), It.IsAny<MessageContext>(), It.IsAny<CancellationToken>()))
@@ -157,7 +152,7 @@ public class DemoTransportTests
     {
         // Arrange
         var message = new TestMessage { Value = "test" };
-        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
+        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "correlation-1", Headers = [] };
         var mockHandler = new Mock<IMessageHandler<TestMessage>>();
         mockHandler
             .Setup(x => x.HandleAsync(It.IsAny<TestMessage>(), It.IsAny<MessageContext>(), It.IsAny<CancellationToken>()))
@@ -177,7 +172,7 @@ public class DemoTransportTests
     {
         // Arrange
         var message = new TestMessage { Value = "test" };
-        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
+        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "correlation-1", Headers = [] };
         var mockHandler = new Mock<IMessageHandler<TestMessage>>();
         mockHandler
             .Setup(x => x.HandleAsync(It.IsAny<TestMessage>(), It.IsAny<MessageContext>(), It.IsAny<CancellationToken>()))
@@ -233,25 +228,130 @@ public class DemoTransportTests
         handler.Verify(x => x.HandleAsync(message, It.IsAny<MessageContext>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Fact]
-    public async Task StartAsync_InvokesTransportStartAsync()
-    {
-        // Arrange
 
-        // Act
-        await _transport.StartAsync(CancellationToken.None);
+    //// Methods for code coverage that do nothing.
 
-        // Assert
-    }
+    //[Fact]
+    //public async Task StartAsync()
+    //{
+    //    // Arrange
 
-    [Fact]
-    public async Task StopAsync_InvokesTransportStopAsync()
-    {
-        // Arrange
+    //    // Act
+    //    await _transport.StartAsync(CancellationToken.None);
 
-        // Act
-        await _transport.StopAsync(CancellationToken.None);
+    //    // Assert
+    //}
 
-        // Assert
-    }
+    //[Fact]
+    //public async Task StopAsync()
+    //{
+    //    // Arrange
+
+    //    // Act
+    //    await _transport.StopAsync(CancellationToken.None);
+
+    //    // Assert
+    //}
+
+    //[Fact]
+    //public async Task GetDlqMessagesAsync()
+    //{
+    //    // Arrange
+
+    //    // Act
+    //    await _transport.GetDeadLetterMessagesAsync(CancellationToken.None);
+
+    //    // Assert
+    //}
+
+    //[Fact]
+    //public async Task GetFailedDlqMessagesAsync()
+    //{
+    //    // Arrange
+
+    //    // Act
+    //    await _transport.GetFailedDeadLetterMessagesAsync(CancellationToken.None);
+
+    //    // Assert
+    //}
+
+    //[Fact]
+    //public async Task ReprocessDlqAsync()
+    //{
+    //    // Arrange
+
+    //    // Act
+    //    await _transport.ReprocessDeadLetterQueueAsync(CancellationToken.None);
+
+    //    // Assert
+    //}
+
+    //[Fact]
+    //public async Task ReprocessDlqItemAsync()
+    //{
+    //    // Arrange
+
+    //    // Act
+    //    await _transport.ReprocessDeadLetterMessageAsync(string.Empty, CancellationToken.None);
+
+    //    // Assert
+    //}
+
+    //[Fact]
+    //public async Task RetryFailedDlqMessagesAsync()
+    //{
+    //    // Arrange
+
+    //    // Act
+    //    await _transport.ProcessDeadLetterQueueAsync(CancellationToken.None);
+
+    //    // Assert
+    //}
+
+    //[Fact]
+    //public async Task ClearDeadLetterQueueAsync()
+    //{
+    //    // Arrange
+
+    //    // Act
+    //    await _transport.ClearDeadLetterQueueAsync(CancellationToken.None);
+
+    //    // Assert
+    //}
+
+    //[Fact]
+    //public void Extension_AddDemoServiceBusDefault()
+    //{
+    //    // Arrange
+    //    var services = new ServiceCollection();
+
+    //    // Act
+    //    services.AddDemoServiceBus();
+
+    //    var provider = services.BuildServiceProvider();
+    //    var bus = provider.GetRequiredService<IServiceBus>();
+
+    //    // Assert
+    //    bus.ShouldNotBeNull();
+    //}
+
+    //[Fact]
+    //public void Extension_AddDemoServiceBus()
+    //{
+    //    // Arrange
+    //    var services = new ServiceCollection();
+
+    //    // Act
+    //    services.AddDemoServiceBus(options => options.MaxRetries = 5, (sp, t) =>
+    //    {
+    //        using var scope = sp.CreateScope();
+    //        t.RegisterHandler(new TestMessageHandler());
+    //    });
+
+    //    var provider = services.BuildServiceProvider();
+    //    var bus = provider.GetRequiredService<IServiceBus>();
+
+    //    // Assert
+    //    bus.ShouldNotBeNull();
+    //}
 }

@@ -3,9 +3,9 @@ NanoBus is a lightweight, AOT-first service bus intended to be lightweight, fast
 
 This project was started due to there currently being no other service bus frameworks that are AOT-first. In other words, they still depend on reflection. This causes the performance of these frameworks to not be ideal for applications that demand the best performance possible. This also causes startup of applications using these frameworks to be slow which isn't ideal for containerization and cloud platforms where applications are being constantly spun up and down. 
 
-Also, reflection code often produces runtime bugs and issues that are hard to debug and reproduce. This can be a nightmare for production. In NanoBus, there will be less surprises because if any reflection code is introduced, it will not compile. If reflection is required in your project, you may still reference the NanoBus AOT libraries.
+Also, reflection code often produces runtime bugs and issues that are hard to debug and reproduce. This can be a nightmare for production. In NanoBus, there will be less surprises because if any reflection code is introduced that requires JIT, it will not publish. If reflection is required in your project, you may still reference the NanoBus AOT libraries.
 
-Since reflection can't be supported in AOT code, message handlers cannot be discovered dynamically at runtime. **-HOWEVER-** this is where NanoBus code generation steps in and automatically wires up message handlers.
+Since most reflection can't be supported in AOT code, message handlers can't be discovered dynamically at runtime. **-HOWEVER-** this is where NanoBus code generation steps in and automatically wires up message handlers.
 
 ---
 ## NanoBus Code Structure

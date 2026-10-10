@@ -14,12 +14,13 @@
     <Project Path="examples/NanoBus.Examples.InMemorySourceGen/NanoBus.Examples.InMemorySourceGen.csproj" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="tests/NanoBus.IntegrationTests/NanoBus.IntegrationTests.csproj" />
     <Project Path="tests/NanoBus.UnitTests/NanoBus.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Transports/">
     <Project Path="src/NanoBus.Transports.Demo.SourceGeneration/NanoBus.Transports.Demo.SourceGeneration.csproj" />
     <Project Path="src/NanoBus.Transports.Demo/NanoBus.Transports.Demo.csproj" />
-    <Project Path="src/NanoBus.Transports.InMemory.SourceGeneration/NanoBus.Transports.InMemory.SourceGeneration.csproj" Id="236997eb-6428-4b8d-a761-e07d70eaa414" />
+    <Project Path="src/NanoBus.Transports.InMemory.SourceGeneration/NanoBus.Transports.InMemory.SourceGeneration.csproj" />
     <Project Path="src/NanoBus.Transports.InMemory/NanoBus.Transports.InMemory.csproj" />
   </Folder>
 

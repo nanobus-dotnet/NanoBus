@@ -1,13 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Moq;
-using NanoBus.Abstractions;
-using NanoBus.Core;
-using NanoBus.Transports.Demo;
-using Shouldly;
-
-namespace NanoBus.UnitTests;
+﻿namespace NanoBus.UnitTests;
 
 [ExcludeFromCodeCoverage]
 public class ServiceBusTests
@@ -28,7 +19,7 @@ public class ServiceBusTests
         // Arrange
         var message = new TestMessage { Value = "test" };
         var handler = new Mock<IMessageHandler<TestMessage>>();
-        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
+        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "correlation-1", Headers = [] };
 
         // Act
         await _bus.SendAsync(message, metadata, CancellationToken.None);
@@ -43,7 +34,7 @@ public class ServiceBusTests
         // Arrange
         var message = new TestMessage { Value = "test" };
         var handler = new Mock<IMessageHandler<TestMessage>>();
-        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "corr-1", Headers = [] };
+        var metadata = new MessageMetadata { MessageId = "msg-1", CorrelationId = "correlation-1", Headers = [] };
 
         // Act
         await _bus.PublishAsync(message, metadata, CancellationToken.None);
@@ -62,6 +53,47 @@ public class ServiceBusTests
 
         // Assert
         _transport.Verify(x => x.StartAsync(CancellationToken.None), Times.Once);
+    }
+
+
+    [Fact]
+    public async Task ReprocessDeadLetterQueueAsync_InvokesTransport()
+    {
+        await _bus.ReprocessDeadLetterQueueAsync(CancellationToken.None);
+
+        _transport.Verify(x => x.ReprocessDeadLetterQueueAsync(CancellationToken.None), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetDeadLetterMessagesAsync_InvokesTransport()
+    {
+        await _bus.GetDeadLetterMessagesAsync(CancellationToken.None);
+
+        _transport.Verify(x => x.GetDeadLetterMessagesAsync(CancellationToken.None), Times.Once);
+    }
+
+    [Fact]
+    public async Task ReprocessDeadLetterMessageAsync_InvokesTransport()
+    {
+        await _bus.ReprocessDeadLetterMessageAsync("unique-id", CancellationToken.None);
+
+        _transport.Verify(x => x.ReprocessDeadLetterMessageAsync(It.IsAny<string>(), CancellationToken.None), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetFailedDeadLetterMessagesAsync_InvokesTransport()
+    {
+        await _bus.GetFailedDeadLetterMessagesAsync(CancellationToken.None);
+
+        _transport.Verify(x => x.GetFailedDeadLetterMessagesAsync(CancellationToken.None), Times.Once);
+    }
+
+    [Fact]
+    public async Task ClearDeadLetterQueueAsync_InvokesTransport()
+    {
+        await _bus.ClearDeadLetterQueueAsync(CancellationToken.None);
+
+        _transport.Verify(x => x.ClearDeadLetterQueueAsync(CancellationToken.None), Times.Once);
     }
 
     [Fact]
