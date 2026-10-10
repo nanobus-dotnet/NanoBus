@@ -1,9 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Moq;
-using NanoBus.Abstractions;
-using Shouldly;
-
-namespace NanoBus.UnitTests;
+﻿namespace NanoBus.UnitTests;
 
 [ExcludeFromCodeCoverage]
 public class MessageContextTests
@@ -13,7 +8,7 @@ public class MessageContextTests
     {
         // Arrange
         var transport = new Mock<ITransport>();
-        var context = new MessageContext(transport.Object, "msg-123", "corr-123", []);
+        var context = new MessageContext(transport.Object, "msg-123", "correlation-123", []);
         var testMessage = new TestMessage { Value = "test123" };
         var metatdata = new MessageMetadata();
 
@@ -29,7 +24,7 @@ public class MessageContextTests
     {
         // Arrange
         var transport = new Mock<ITransport>();
-        var context = new MessageContext(transport.Object, "msg-123", "corr-123", []);
+        var context = new MessageContext(transport.Object, "msg-123", "correlation-123", []);
         var testMessage = new TestMessage { Value = "test123" };
         var metatdata = new MessageMetadata();
 

@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
 	<PackageReference Include="Moq" Version="4.20.70" />
 	<PackageReference Include="Shouldly" Version="4.3.0" />
+	<PackageReference Include="System.Linq.AsyncEnumerable" Version="10.0.12" />
 	<PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
   </ItemGroup>
@@ -22,10 +23,22 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\NanoBus.Core\NanoBus.Core.csproj" />
     <ProjectReference Include="..\..\src\NanoBus.Transports.Demo\NanoBus.Transports.Demo.csproj" />
+    <ProjectReference Include="..\..\src\NanoBus.Transports.InMemory\NanoBus.Transports.InMemory.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Xunit" />
+	<Using Include="Microsoft.Extensions.DependencyInjection" />
+	<Using Include="Microsoft.Extensions.Logging.Abstractions" />
+	<Using Include="Microsoft.Extensions.Logging" />
+	<Using Include="Moq" />
+	<Using Include="NanoBus.Abstractions" />
+	<Using Include="NanoBus.Core" />
+	<Using Include="NanoBus.Transports.Demo" />
+	<Using Include="NanoBus.Transports.InMemory" />
+	<Using Include="Shouldly" />
+	<Using Include="System.Diagnostics.CodeAnalysis" />
+	<Using Include="System.Threading.Channels" />
+	<Using Include="Xunit" />
   </ItemGroup>
 
 </Project>
