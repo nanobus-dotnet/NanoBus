@@ -70,7 +70,7 @@ public interface ITransport
     ValueTask ReprocessDeadLetterMessageAsync(string uniqueId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retries failed messages in the dead letter queue.
+    /// Processes failed messages in the dead letter queue.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     Task ProcessDeadLetterQueueAsync(CancellationToken cancellationToken = default);

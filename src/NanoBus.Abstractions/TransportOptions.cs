@@ -8,5 +8,5 @@ public class TransportOptions
     /// <summary>
     /// The maximum number if times to retry message delivery.
     /// </summary>
-    public int MaxRetries { get; set; } = 3;
+    public int MaxDeliveryAttempts { get; set; } = 4;
 }

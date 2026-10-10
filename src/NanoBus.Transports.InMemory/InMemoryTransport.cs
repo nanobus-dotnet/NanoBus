@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NanoBus.Abstractions;
 using NanoBus.Core;
@@ -8,20 +9,24 @@ namespace NanoBus.Transports.InMemory;
 /// <summary>
 /// In-memory transport which uses Channels rather than physical transports.
 /// </summary>
-public partial class InMemoryTransport : ITransport
+/// <param name="channelManager">The channel manager.</param>
+/// <param name="deadLetterQueue">The dead letter queue.</param>
+/// <param name="options">The options used.</param>
+/// <param name="logger">The logger.</param>
+public partial class InMemoryTransport(IMessageChannelRouter channelManager, IDeadLetterQueue deadLetterQueue, InMemoryTransportOptions? options = null, ILogger<InMemoryTransport>? logger = null) : ITransport
 {
-    private readonly InMemoryTransportOptions _options;
-    private readonly ILogger<InMemoryTransport> _logger;
+    private readonly InMemoryTransportOptions _options = options ?? new();
+    private readonly ILogger<InMemoryTransport> _logger = logger ?? NullLogger<InMemoryTransport>.Instance;
 
     /// <summary>
     /// The manager of message delivery channels.
     /// </summary>
-    private readonly ChannelManager _channelManager;
+    private readonly IMessageChannelRouter _messageChannelRouter = channelManager;
 
     /// <summary>
     /// The queue where undeliverable messages are stored.
     /// </summary>
-    private readonly IDeadLetterQueue _deadLetterQueue;
+    private readonly IDeadLetterQueue _deadLetterQueue = deadLetterQueue;
 
     /// <summary>
     /// The background task that delivers messages.
@@ -36,26 +41,12 @@ public partial class InMemoryTransport : ITransport
     /// <summary>
     /// The token source used to cancel the background message delivery and DLQ tasks.
     /// </summary>
-    private readonly CancellationTokenSource _tokenSource;
+    private readonly CancellationTokenSource _tokenSource = new();
 
     /// <summary>
     /// The registry where message handlers are stored.
     /// </summary>
-    private readonly MessageHandlerRegistry _handlerRegistry;
-
-
-    /// <param name="deadLetterQueue">The dead letter queue.</param>
-    /// <param name="options">The options used.</param>
-    /// <param name="logger">The logger.</param>
-    public InMemoryTransport(IDeadLetterQueue deadLetterQueue, InMemoryTransportOptions? options = null, ILogger<InMemoryTransport>? logger = null)
-    {
-        _options = options ?? new();
-        _logger = logger ?? NullLogger<InMemoryTransport>.Instance;
-        _channelManager = new(_options.MaxChannelCapacity);
-        _deadLetterQueue = deadLetterQueue;
-        _handlerRegistry = new MessageHandlerRegistry(logger);
-        _tokenSource = new CancellationTokenSource();
-    }
+    private readonly MessageHandlerRegistry _handlerRegistry = new(logger);
 
     /// <inheritdoc />
     public void RegisterHandler<T>(IMessageHandler<T> handler) where T : IMessage
@@ -66,16 +57,24 @@ public partial class InMemoryTransport : ITransport
     /// <inheritdoc />
     public async ValueTask PublishAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
     {
-        await WriteToChannel(message, MessageMethod.Publish, metadata, cancellationToken)
+        if (!_isStarted)
+            throw new InvalidOperationException("Transport must be started before publishing messages.");
+
+        await WriteToChannelAsync(message, MessageMethod.Publish, metadata, cancellationToken)
             .ConfigureAwait(false);
     }
 
     /// <inheritdoc />
     public async ValueTask SendAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
     {
-        await WriteToChannel(message, MessageMethod.Send, metadata, cancellationToken)
+        if (!_isStarted)
+            throw new InvalidOperationException("Transport must be started before sending messages.");
+
+        await WriteToChannelAsync(message, MessageMethod.Send, metadata, cancellationToken)
             .ConfigureAwait(false);
     }
+
+    private bool _isStarted = false;
 
     /// <inheritdoc />
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -87,6 +86,7 @@ public partial class InMemoryTransport : ITransport
 
         // Start the background task to retry failed messages.
         _errorDeliveryTask = ProcessDeadLetterQueueAsync(_tokenSource.Token);
+        _isStarted = true;
     }
 
 
@@ -98,7 +98,7 @@ public partial class InMemoryTransport : ITransport
         await _tokenSource.CancelAsync()
             .ConfigureAwait(false);
 
-        _channelManager.CompleteAll();
+        _messageChannelRouter.CompleteAll();
 
         // Await both tasks.
         if (_messageDeliveryTask != null)
@@ -108,6 +108,8 @@ public partial class InMemoryTransport : ITransport
         if (_errorDeliveryTask != null)
             await _errorDeliveryTask
                 .ConfigureAwait(false);
+
+        _isStarted = false;
     }
 
 
@@ -118,10 +120,10 @@ public partial class InMemoryTransport : ITransport
     /// <param name="message">The message.</param>
     /// <param name="method">The delivery method, either Send or Publish.</param>
     /// <param name="metadata">The message metadata.</param>
-    /// <param name="cancellationToken">The token to cancel the operation.</param>
+    /// <param name="invokerToken">The token to cancel the operation.</param>
     /// <returns>The task to write to the message channel.</returns>
     /// <exception cref="InvalidOperationException"></exception>
-    private async ValueTask WriteToChannel<T>(T message, MessageMethod method, MessageMetadata? metadata, CancellationToken cancellationToken) where T : IMessage
+    private async ValueTask WriteToChannelAsync<T>(T message, MessageMethod method, MessageMetadata? metadata, CancellationToken invokerToken) where T : IMessage
     {
         var messageType = message.GetType().FullName!;
 
@@ -132,10 +134,9 @@ public partial class InMemoryTransport : ITransport
         }
 
         // Send the message to its channel.
-
         var context = new MessageContext(this, metadata?.MessageId, metadata?.CorrelationId, metadata?.Headers);
 
-        await _channelManager.EnqueueMessageAsync(messageType, message, method, context, 0, cancellationToken)
+        await _messageChannelRouter.EnqueueMessageAsync(messageType, message, method, context, invokerToken)
             .ConfigureAwait(false);
     }
 
@@ -152,7 +153,7 @@ public partial class InMemoryTransport : ITransport
         try
         {
             // Listen for notifications of new message types.
-            await foreach (var messageType in _channelManager.GetPendingMessageTypesAsync(cancellationToken))
+            await foreach (var messageType in _messageChannelRouter.GetPendingMessageTypesAsync(cancellationToken))
             {
                 // Only spawn one processing task per type if not already running.
                 if (!processingTasks.ContainsKey(messageType))
@@ -163,23 +164,21 @@ public partial class InMemoryTransport : ITransport
                 }
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) // Expected during shutdown.
         {
-            // Expected during shutdown.
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Fatal error in the message delivery process.");
+            throw;
         }
 
-        // Wait for all processing tasks to complete.
-        try
+        try // Wait for all processing tasks to complete.
         {
             await Task.WhenAll(processingTasks.Values).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) // Expected during shutdown.
         {
-            // Expected during shutdown.
         }
     }
 
@@ -193,12 +192,11 @@ public partial class InMemoryTransport : ITransport
     private async Task ProcessChannelAsync(string messageType, CancellationToken cancellationToken)
     {
         // Read all messages in the channel.
-        await foreach (var (message, method, context, retryCount, token) in _channelManager.ReadAllAsync(messageType, cancellationToken))
+        await foreach (var (message, method, context, invokerToken) in _messageChannelRouter.ReadAllAsync(messageType, cancellationToken))
         {
             var handlers = _handlerRegistry.GetHandlers(messageType);
 
-            // Invoke the handlers for each message.
-            try
+            try // Invoke the handlers for each message.
             {
                 switch (method)
                 {
@@ -206,34 +204,27 @@ public partial class InMemoryTransport : ITransport
                         if (handlers.Count > 1)
                             _logger.LogWarning("More than one handler for sent message type '{MessageType}'", messageType);
 
-                        await handlers.First().Invoke(message, context, token)
+                        await handlers.First().Invoke(message, context, invokerToken)
                             .ConfigureAwait(false);
-
                         break;
-
                     case MessageMethod.Publish:
-                        var publishTasks = handlers.Select(h => h.Invoke(message, context, token)).ToList();
+                        var publishTasks = handlers.Select(h => h.Invoke(message, context, invokerToken)).ToList();
 
                         await Task.WhenAll(publishTasks)
                             .ConfigureAwait(false);
                         break;
                 }
-
             }
             catch (Exception ex)
             {
-                await _deadLetterQueue.EnqueueAsync(message, messageType, method, context, DateTime.UtcNow, ex, token)
+                _logger.LogError(ex, "Delivery failed for MessageId: {MessageId} - Correlation Id: {CorrelationId} - MessageType: '{MessageType}'", context.MessageId, context.CorrelationId, messageType);
+                await _deadLetterQueue.EnqueueAsync(message, messageType, method, context, DateTime.UtcNow, 1, ex, invokerToken, cancellationToken)
                     .ConfigureAwait(false);
             }
         }
     }
 
-
-    /// <summary>
-    /// Retries failed messages in the dead letter queue.
-    /// </summary>
-    /// <param name="cancellationToken">The token used to cancel the task.</param>
-    /// <returns>The retry task.</returns>
+    /// <inheritdoc />
     public async Task ProcessDeadLetterQueueAsync(CancellationToken cancellationToken = default)
     {
         try
@@ -244,68 +235,72 @@ public partial class InMemoryTransport : ITransport
                 var readyMessages = await _deadLetterQueue.GetMessagesForRetryAsync(cancellationToken)
                     .ConfigureAwait(false);
 
-                foreach (var (id, messageType, message, method, context, retryCount, nextRetryTime, _, _, token) in readyMessages)
+                foreach (var (id, messageType, message, method, context, attempts, nextRetryTime, _, _, token) in readyMessages)
                 {
+                    await _deadLetterQueue.RemoveAsync(id, cancellationToken) // Remove from DLQ to avoid race condition.
+                        .ConfigureAwait(false);
+
                     var handlers = _handlerRegistry.GetHandlers(messageType);
 
-                    try
+                    try // Attempt redelivery.
                     {
-                        // Attempt redelivery.
-                        switch (method)
-                        {
-                            case MessageMethod.Send:
-                                if (handlers.Count > 1)
-                                    _logger.LogWarning("More than one handler for sent message type '{MessageType}'", messageType);
-
-                                await handlers.First().Invoke(message, context, token)
-                                    .ConfigureAwait(false);
-
-                                break;
-
-                            case MessageMethod.Publish:
-                                var publishTasks = handlers.Select(h => h.Invoke(message, context, token)).ToList();
-
-                                await Task.WhenAll(publishTasks)
-                                    .ConfigureAwait(false);
-                                break;
-                        }
-
-                        await _deadLetterQueue.RemoveAsync(id, cancellationToken)
-                            .ConfigureAwait(false);
+                        await SendMessageByMethod(messageType, message, method, context, handlers, token).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
-                        await _deadLetterQueue.UpdateMessageRetryAsync(id, retryCount, ex, cancellationToken)
+                        await _deadLetterQueue.EnqueueAsync(message, messageType, method, context, DateTime.UtcNow, attempts, ex, token, cancellationToken)
                             .ConfigureAwait(false);
                     }
                 }
 
-                // Check every second.
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+                await Task.Delay(_options.DeadLetterPollingDelay, cancellationToken); // Check only on the given interval.
             }
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) // Expected exception.
         {
-            // Expected exception.
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Fatal error occurred delivering failed messages.");
+            throw;
+        }
+    }
+
+    private async Task SendMessageByMethod(string messageType, IMessage message, MessageMethod method, 
+        MessageContext context, ConcurrentBag<Func<IMessage, MessageContext, CancellationToken, Task>> handlers, CancellationToken token)
+    {
+        switch (method)
+        {
+            case MessageMethod.Send:
+                if (handlers.Count > 1)
+                    _logger.LogWarning("More than one handler for sent message type '{MessageType}'", messageType);
+
+                await handlers.First().Invoke(message, context, token)
+                    .ConfigureAwait(false);
+                break;
+
+            case MessageMethod.Publish:
+                var publishTasks = handlers.Select(h => h.Invoke(message, context, token)).ToList();
+
+                await Task.WhenAll(publishTasks)
+                    .ConfigureAwait(false);
+                break;
         }
     }
 
     /// <inheritdoc />
-    public async ValueTask<IEnumerable<FailedMessage>> GetDeadLetterMessagesAsync(CancellationToken cancellationToken = default) 
+    public async ValueTask<IEnumerable<FailedMessage>> GetDeadLetterMessagesAsync(CancellationToken cancellationToken = default)
         => await _deadLetterQueue.GetAllMessagesAsync(cancellationToken)
             .ConfigureAwait(false);
+
 
     /// <inheritdoc />
     public async ValueTask ReprocessDeadLetterQueueAsync(CancellationToken cancellationToken = default)
     {
-        foreach (var failedMessage in await _deadLetterQueue.GetAllMessagesAsync(cancellationToken)
-            .ConfigureAwait(false))
+        foreach (var failedMessage in (await _deadLetterQueue.GetAllMessagesAsync(cancellationToken)
+            .ConfigureAwait(false)).ToList())
         {
-            await _deadLetterQueue.UpdateMessageRetryAsync(failedMessage.UniqueId, 0, null, cancellationToken)
+            await ReprocessDeadLetterMessageAsync(failedMessage.UniqueId, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -315,16 +310,37 @@ public partial class InMemoryTransport : ITransport
     /// <inheritdoc />
     public async ValueTask ReprocessDeadLetterMessageAsync(string uniqueId, CancellationToken cancellationToken = default)
     {
-        var message = await _deadLetterQueue.GetMessageAsync(uniqueId, cancellationToken)
+        if (string.IsNullOrWhiteSpace(uniqueId))
+        {
+            _logger.LogError("Unique Id must be valid.");
+            throw new ArgumentException("Unique Id must be valid.");
+        }
+
+        var failedMessage = await _deadLetterQueue.RemoveAsync(uniqueId, cancellationToken)
             .ConfigureAwait(false);
 
-        if (message is null)
-            return;
+        if (failedMessage is null)
+        {
+            _logger.LogError("Message not found for Unique Id: '{UniqueId}'", uniqueId);
+            throw new InvalidOperationException($"Message not found for Unique Id: '{uniqueId}'");
+        }
 
-        var context = message.Context;
+        var context = failedMessage.Context;
 
-        await _deadLetterQueue.UpdateMessageRetryAsync(message.UniqueId, 0, null, cancellationToken)
-            .ConfigureAwait(false);
+
+        var metadata = new MessageMetadata { MessageId = context.MessageId, CorrelationId = context.CorrelationId, Headers = new Dictionary<string, string>(context.Headers) };
+
+        switch (failedMessage.Method)
+        {
+            case MessageMethod.Send:
+                await SendAsync(failedMessage.Message, metadata, failedMessage.Token)
+                    .ConfigureAwait(false);
+                break;
+            case MessageMethod.Publish:
+                await PublishAsync(failedMessage.Message, metadata, failedMessage.Token)
+                    .ConfigureAwait(false);
+                break;
+        }
 
         _logger.LogInformation("Reprocessed failed DLQ message - {UniqueId} - MessageId: {MessageId} - CorrelationId: {CorrelationId}", uniqueId, context.MessageId, context.CorrelationId);
     }

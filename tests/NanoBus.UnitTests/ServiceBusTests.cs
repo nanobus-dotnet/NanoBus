@@ -218,7 +218,7 @@ public class ServiceBusTests
         var services = new ServiceCollection();
 
         // Act
-        services.AddDemoServiceBus(options => options.MaxRetries = 5, (sp, t) =>
+        services.AddDemoServiceBus(options => options.MaxDeliveryAttempts = 5, (sp, t) =>
         {
             using var scope = sp.CreateScope();
             t.RegisterHandler(new TestMessageHandler());

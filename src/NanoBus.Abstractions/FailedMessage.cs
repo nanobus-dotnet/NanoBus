@@ -12,16 +12,16 @@
 /// <param name="LastFailedOn">The time the message last failed.</param>
 /// <param name="NextRetryTime">The next time message delivery will be attempted.</param>
 /// <param name="LastError">The last error experienced during delivery.</param>
-/// <param name="Token">The cancellation token to apply to the redelivery of the message.</param>
+/// <param name="Token">The cancellation token to apply to the redelivery of the message (the token sent by the sender or publisher).</param>
 public record FailedMessage(
-    string UniqueId, 
-    string MessageType, 
-    IMessage Message, 
-    MessageMethod Method, 
-    MessageContext Context, 
-    int DeliveryAttempts, 
-    DateTime LastFailedOn, 
+    string UniqueId,
+    string MessageType,
+    IMessage Message,
+    MessageMethod Method,
+    MessageContext Context,
+    int DeliveryAttempts,
+    DateTime LastFailedOn,
     DateTime NextRetryTime,
-    Exception? LastError, 
+    Exception LastError,
     CancellationToken Token
     );

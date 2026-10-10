@@ -25,10 +25,19 @@ public static class InMemoryServiceBusExtensions
 
         services.AddSingleton<ITransport, InMemoryTransport>(sp =>
         {
-            var logger = sp.GetService<ILogger<InMemoryTransport>>();
             var transportOptions = new InMemoryTransportOptions();
             options?.Invoke(transportOptions);
-            return new InMemoryTransport(new InMemoryDeadLetterQueue { MaxRetries = transportOptions.MaxRetries }, transportOptions, logger);
+            var transportLogger = sp.GetService<ILogger<InMemoryTransport>>();
+            var dlqLogger = sp.GetService<ILogger<InMemoryDeadLetterQueue>>();
+
+            var channelManager = new MessageChannelRouter(transportOptions.MaxChannelCapacity);
+
+            var dlq = new InMemoryDeadLetterQueue(dlqLogger)
+            {
+                MaxDeliveryAttempts = transportOptions.MaxDeliveryAttempts
+            };
+
+            return new InMemoryTransport(channelManager, dlq, transportOptions, transportLogger);
         });
 
         return services;
