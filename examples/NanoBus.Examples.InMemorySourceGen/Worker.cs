@@ -24,14 +24,15 @@ public class Worker(IServiceBus serviceBus, ILogger<Worker> logger) : Background
                 await Task.Delay(TimeSpan.FromSeconds(new Random().Next(1, 5)), stoppingToken);
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(new Random().Next(5, 10)), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(new Random().Next(15, 20)), stoppingToken);
 
             var failedMessages = await _serviceBus.GetFailedDeadLetterMessagesAsync(stoppingToken);
 
             if (!failedMessages.Any())
                 continue;
+
             // Allow a bit of time then get the DLQ messages.
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
 
             // Reprocess a single DLQ message.
             var uniqueId = failedMessages.First().UniqueId;
@@ -39,7 +40,7 @@ public class Worker(IServiceBus serviceBus, ILogger<Worker> logger) : Background
             await _serviceBus.ReprocessDeadLetterMessageAsync(uniqueId, stoppingToken);
 
             // Then reprocess all DLQ messages.
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
 
             foreach (var message in failedMessages)
             {
@@ -47,13 +48,14 @@ public class Worker(IServiceBus serviceBus, ILogger<Worker> logger) : Background
                 _logger.LogInformation("DLQ Message: {UniqueId} - MessageId: {MessageId} - CorrelationId: {CorrelationId} - {DeliveryAttempts} Delivery Attempts - Failed at: {LastFailedOn} - {ErrorMessage}", message.UniqueId, context.MessageId, context.CorrelationId, message.DeliveryAttempts, message.LastFailedOn, message.LastError?.Message);
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
+
+            await _serviceBus.ReprocessDeadLetterQueueAsync(stoppingToken);
+
+            await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
 
             await _serviceBus.ClearDeadLetterQueueAsync(stoppingToken);
 
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
-
-            await _serviceBus.ReprocessDeadLetterQueueAsync(stoppingToken);
 
         }
     }

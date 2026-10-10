@@ -11,4 +11,9 @@ public class InMemoryTransportOptions : TransportOptions
     /// The maximum capacity for each message type channel.
     /// </summary>
     public int MaxChannelCapacity { get; set; } = 1000;
+
+    /// <summary>
+    /// The amount of time to throttle polling for DLQ messages.
+    /// </summary>
+    public TimeSpan DeadLetterPollingDelay { get; set; } = TimeSpan.Parse("00:00:01");
 }

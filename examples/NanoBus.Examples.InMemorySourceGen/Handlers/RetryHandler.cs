@@ -12,14 +12,14 @@ public class RetryHandler(ILogger<RetryHandler> logger) : IMessageHandler<OrderC
 		try
 		{
             // Fail on average every 5th time.
-            if (new Random().Next(5) % 5 == 0)
+            //if (new Random().Next(5) % 5 == 0)
                 throw new InvalidOperationException("Handler threw an exception");
 
 			return ValueTask.CompletedTask;
 		}
 		catch (Exception ex)
 		{
-			_logger.LogError(ex, "Error in RetryHandler");
+			//_logger.LogError(ex, "Error in RetryHandler");
 			throw;
 		}
     }

@@ -32,9 +32,9 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
 
         foreach (var handler in _handlerRegistry.GetHandlers(messageType))
         {
-            var retries = _options.MaxRetries;
+            var attempts = 1;
 
-            while (retries >= 0)
+            while (attempts <= _options.MaxDeliveryAttempts)
             {
                 try
                 {
@@ -45,7 +45,7 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error delivering message - MessageId: {MessageId} CorrelationId: {CorrelationId}. {Retries} retries left.", context.MessageId, context.CorrelationId, retries--);
+                    _logger.LogError(ex, "Error delivering message - MessageId: {MessageId} CorrelationId: {CorrelationId}. {Retries} retries left.", context.MessageId, context.CorrelationId, attempts++);
                 }
             }
         }
@@ -65,9 +65,9 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
 
         var context = new MessageContext(this, metadata?.MessageId, metadata?.CorrelationId, metadata?.Headers);
 
-        var retries = _options.MaxRetries;
+        var attempts = 1;
 
-        while (retries >= 0)
+        while (attempts <= _options.MaxDeliveryAttempts)
         {
             try
             {
@@ -78,7 +78,7 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error delivering message - MessageId: {MessageId} CorrelationId: {CorrelationId}. {Retries} retries left.", context.MessageId, context.CorrelationId, retries--);
+                _logger.LogError(ex, "Error delivering message - MessageId: {MessageId} CorrelationId: {CorrelationId}. {Retries} retries left.", context.MessageId, context.CorrelationId, attempts++);
             }
         }
     }

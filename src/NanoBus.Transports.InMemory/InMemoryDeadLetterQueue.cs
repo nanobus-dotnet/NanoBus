@@ -9,21 +9,25 @@ namespace NanoBus.Transports.InMemory;
 /// The in-memory manager of dead letter queue messages.
 /// </summary>
 /// <param name="logger">The logger to use.</param>
-public class InMemoryDeadLetterQueue(ILogger? logger = null) : IDeadLetterQueue
+public class InMemoryDeadLetterQueue(ILogger<InMemoryDeadLetterQueue>? logger = null) : IDeadLetterQueue
 {
     private readonly ConcurrentDictionary<string, FailedMessage> _queue = new();
-    private readonly ILogger _logger = logger ?? NullLogger.Instance;
+    private readonly ILogger _logger = logger ?? NullLogger<InMemoryDeadLetterQueue>.Instance;
 
     /// <inheritdoc />
-    public int MaxRetries { get; set; } = 3;
+    public int MaxDeliveryAttempts { get; set; } = 4;
 
     /// <inheritdoc />
-    public ValueTask<string> EnqueueAsync(IMessage message, string messageType, MessageMethod method, MessageContext context, DateTime lastFailedOn, Exception lastError,
-             CancellationToken token, CancellationToken cancellationToken = default)
+    public ValueTask<string> EnqueueAsync(IMessage message, string messageType, MessageMethod method, MessageContext context, DateTime lastFailedOn, int deliveryAttempt, Exception lastError, CancellationToken invokerToken, CancellationToken cancellationToken)
     {
-        var delay = GetBackoffDelay(0);
-        _logger.LogError(lastError, "Delivery failed for MessageId: {MessageId} - Correlation Id: {CorrelationId} - MessageType: '{MessageType}' - Retrying in {Delay} - Retry Attempts {RetryAttempts}", context.MessageId, context.CorrelationId, messageType, delay, 1);
+        if (deliveryAttempt <= 0)
+        {
+            _logger.LogWarning("Delivery attempt must be at least 1. Setting to 1.");
+            deliveryAttempt = 1;
+        }
         var id = Guid.NewGuid().ToString();
+
+        var delay = GetBackoffDelay(deliveryAttempt - 1);
 
         var failed = new FailedMessage(
             UniqueId: id,
@@ -31,72 +35,55 @@ public class InMemoryDeadLetterQueue(ILogger? logger = null) : IDeadLetterQueue
             Message: message,
             Method: method,
             Context: context,
-            DeliveryAttempts: 1,
+            DeliveryAttempts: deliveryAttempt + 1,
             LastFailedOn: lastFailedOn,
             NextRetryTime: lastFailedOn + delay,
             LastError: lastError,
-            Token: token
-        );
+            Token: invokerToken
+            );
 
         _queue[id] = failed;
+
+        if (deliveryAttempt >= MaxDeliveryAttempts)
+        {
+            _logger.LogError(lastError, "All retries failed for MessageId: {MessageId} - Correlation Id: {CorrelationId} - MessageType: '{MessageType}'.", context.MessageId, context.CorrelationId, messageType);
+            return ValueTask.FromResult(id);
+        }
+
+        _logger.LogError(lastError, "Enqueuing failed message MessageId: {MessageId} - Correlation Id: {CorrelationId} - MessageType: '{MessageType}' - Retrying in {Delay} - Attempt {DeliveryAttempt}", context.MessageId, context.CorrelationId, messageType, delay, deliveryAttempt + 1);
+
         return ValueTask.FromResult(id);
     }
 
 
     /// <inheritdoc />
-    public ValueTask<IEnumerable<FailedMessage>> GetMessagesForRetryAsync(CancellationToken cancellationToken = default)
-        => ValueTask.FromResult(_queue.Values.Where(m => m.NextRetryTime <= DateTime.UtcNow && m.DeliveryAttempts <= MaxRetries));
+    public ValueTask<IEnumerable<FailedMessage>> GetMessagesForRetryAsync(CancellationToken cancellationToken)
+        => ValueTask.FromResult(_queue.Values.Where(m => m.NextRetryTime <= DateTime.UtcNow && m.DeliveryAttempts <= MaxDeliveryAttempts));
 
     /// <inheritdoc />
-    public ValueTask<IEnumerable<FailedMessage>> GetAllMessagesAsync(CancellationToken cancellationToken = default) 
+    public ValueTask<IEnumerable<FailedMessage>> GetAllMessagesAsync(CancellationToken cancellationToken)
         => ValueTask.FromResult(_queue.Values.AsEnumerable());
 
     /// <inheritdoc />
-    public ValueTask<IEnumerable<FailedMessage>> GetAllFailedMessagesAsync(CancellationToken cancellationToken = default) 
-        => ValueTask.FromResult(_queue.Values.Where(m => m.DeliveryAttempts > MaxRetries));
+    public ValueTask<IEnumerable<FailedMessage>> GetAllFailedMessagesAsync(CancellationToken cancellationToken)
+        => ValueTask.FromResult(_queue.Values.Where(m => m.DeliveryAttempts > MaxDeliveryAttempts));
 
     /// <inheritdoc />
-    public ValueTask<FailedMessage?> GetMessageAsync(string uniqueId, CancellationToken cancellationToken = default)
+    public ValueTask<FailedMessage?> GetMessageAsync(string uniqueId, CancellationToken cancellationToken)
     {
         _queue.TryGetValue(uniqueId, out var failedMessage);
         return ValueTask.FromResult(failedMessage);
     }
 
     /// <inheritdoc />
-    public ValueTask UpdateMessageRetryAsync(string uniqueId, int retryCount, Exception? lastError = null, CancellationToken cancellationToken = default)
+    public ValueTask<FailedMessage?> RemoveAsync(string id, CancellationToken cancellationToken)
     {
-        if (!_queue.TryGetValue(uniqueId, out var failed))
-            return ValueTask.CompletedTask;
-
-        var backoffDelay = GetBackoffDelay(retryCount);
-
-        _queue[uniqueId] = failed with
-        {
-            DeliveryAttempts = retryCount + 1,
-            NextRetryTime = DateTime.UtcNow + backoffDelay,
-            LastError = lastError
-        };
-
-        if (retryCount >= MaxRetries)
-        {
-            _logger.LogError(failed.LastError, "All retries failed for MessageId: {MessageId} - Correlation Id: {CorrelationId} - MessageType: '{MessageType}'.", failed.Context.MessageId, failed.Context.CorrelationId, failed.MessageType);
-            return ValueTask.CompletedTask;
-        }
-
-        _logger.LogError(failed.LastError, "Delivery failed for MessageId: {MessageId} - Correlation Id: {CorrelationId} - MessageType: '{MessageType}'. Retrying in {BackoffDelay} Retry Attempts {RetryAttempts}", failed.Context.MessageId, failed.Context.CorrelationId, failed.MessageType, backoffDelay, retryCount + 1);
-
-        return ValueTask.CompletedTask;
+        _queue.Remove(id, out var failedMessage);
+        return ValueTask.FromResult(failedMessage);
     }
 
     /// <inheritdoc />
-    public ValueTask RemoveAsync(string id, CancellationToken cancellationToken = default)
-    {
-        _queue.TryRemove(id, out _);
-        return ValueTask.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public ValueTask ClearQueueAsync(CancellationToken cancellationToken = default)
+    public ValueTask ClearQueueAsync(CancellationToken cancellationToken)
     {
         _queue.Clear();
         return ValueTask.CompletedTask;
@@ -105,7 +92,7 @@ public class InMemoryDeadLetterQueue(ILogger? logger = null) : IDeadLetterQueue
     private static TimeSpan GetBackoffDelay(int retryCount)
     {
         // Exponential backoff max at 1 minute
-        var delaySeconds = Math.Min(1 * (int)Math.Pow(2, retryCount), 60);
+        var delaySeconds = Math.Min((int)Math.Pow(2, retryCount), 60);
         return TimeSpan.FromSeconds(delaySeconds);
     }
 
