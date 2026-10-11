@@ -45,9 +45,8 @@ public class MessageChannelRouter(int boundedChannelCapacity = 100) : IMessageCh
     public IAsyncEnumerable<(IMessage Message, MessageMethod Method, MessageContext Context, CancellationToken InvokerToken)>
         ReadAllAsync(string messageType, CancellationToken cancellationToken = default)
     {
-        var channel = _typeChannels.GetOrAdd(messageType, _ =>
-            Channel.CreateBounded<(IMessage, MessageMethod, MessageContext, CancellationToken)>(
-                new BoundedChannelOptions(BoundedChannelCapacity) { FullMode = BoundedChannelFullMode.Wait }));
+        if (!_typeChannels.TryGetValue(messageType, out var channel))
+            throw new InvalidOperationException($"No Channel for message type: '{messageType}'");
 
         return channel.Reader.ReadAllAsync(cancellationToken);
     }
