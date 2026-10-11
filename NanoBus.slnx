@@ -2,25 +2,23 @@
   <Folder Name="/Abstractions/">
     <Project Path="src/NanoBus.Abstractions/NanoBus.Abstractions.csproj" />
   </Folder>
+  <Folder Name="/Benchmarks/">
+    <Project Path="benchmarks/NanoBus.Benchmarks/NanoBus.Benchmarks.csproj" Id="3071bcc4-18ff-457c-ae5a-235d34eeb38a" />
+  </Folder>
   <Folder Name="/Core/">
-    <Project Path="src/NanoBus.Core.SourceGeneration/NanoBus.Core.SourceGeneration.csproj" />
     <Project Path="src/NanoBus.Core/NanoBus.Core.csproj" />
   </Folder>
   <Folder Name="/Examples/">
-    <Project Path="examples/NanoBus.Examples.DemoConsole/NanoBus.Examples.DemoConsole.csproj" />
-    <Project Path="examples/NanoBus.Examples.DemoInjection/NanoBus.Examples.DemoInjection.csproj" />
-    <Project Path="examples/NanoBus.Examples.DemoSourceGen/NanoBus.Examples.DemoSourceGen.csproj" />
-    <Project Path="examples/NanoBus.Examples.InMemoryInjection/NanoBus.Examples.InMemoryInjection.csproj" />
-    <Project Path="examples/NanoBus.Examples.InMemorySourceGen/NanoBus.Examples.InMemorySourceGen.csproj" />
+    <Project Path="examples/DemoConsole/DemoConsole.csproj" />
+    <Project Path="examples/DemoWorker/DemoWorker.csproj" />
+    <Project Path="examples/InMemoryWorker/InMemoryWorker.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="tests/NanoBus.IntegrationTests/NanoBus.IntegrationTests.csproj" />
     <Project Path="tests/NanoBus.UnitTests/NanoBus.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Transports/">
-    <Project Path="src/NanoBus.Transports.Demo.SourceGeneration/NanoBus.Transports.Demo.SourceGeneration.csproj" />
     <Project Path="src/NanoBus.Transports.Demo/NanoBus.Transports.Demo.csproj" />
-    <Project Path="src/NanoBus.Transports.InMemory.SourceGeneration/NanoBus.Transports.InMemory.SourceGeneration.csproj" />
     <Project Path="src/NanoBus.Transports.InMemory/NanoBus.Transports.InMemory.csproj" />
   </Folder>
 

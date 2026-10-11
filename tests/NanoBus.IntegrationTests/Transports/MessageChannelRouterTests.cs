@@ -115,6 +115,16 @@ public class MessageChannelRouterTests
     }
 
     [Fact]
+    public async Task ReadAllAsync_NoMessageRegistered_ShouldThrowException()
+    {
+        // Arrange
+        var router = new MessageChannelRouter();
+
+        // Act & Assert
+        Should.Throw<InvalidOperationException>(() => router.ReadAllAsync("Type1", CancellationToken.None));
+    }
+
+    [Fact]
     public async Task EnqueueMessageAsync_PreservesMessageMethod()
     {
         // Arrange

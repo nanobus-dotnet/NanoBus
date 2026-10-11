@@ -51,6 +51,7 @@ git checkout -b feature/your-descriptive-branch-name
 - `refactor/` - code refactoring
 - `test/` - test additions or improvements
 - `chore/` - routine maintenance and dependency updates
+- `release/` - major releases, structural overhauls, multi-faceted milestone work
 - `example/` - examples
 
 ### Step 2: Make Your Changes

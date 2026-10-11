@@ -197,26 +197,28 @@ public class InMemoryTransportTests
         _mockLogger.VerifyMessageContains("Message not found for Unique Id:", LogLevel.Error, Times.Once);
     }
 
-    //[Fact]
-    //public async Task ReprocessDeadLetterQueueAsync_ShouldInvoke_DlqGetAllMessagesAsync()
-    //{
-    //    // Arrange
-    //    _mockDlq.Setup(q => { q.MaxDeliveryAttempts = 1})
-    //    var manager = new ChannelManager();
-    //    var transport = new InMemoryTransport(manager, _mockDlq.Object, new InMemoryTransportOptions());
-    //    var handler = new AlwaysFailsHandler();
-    //    transport.RegisterHandler(handler);
-    //    await transport.StartAsync();
-    //    await transport.SendAsync(new TestMessage { Value = "test-dlq" });
-    //    await Task.Delay(TimeSpan.FromSeconds(1));
+    [Fact]
+    public async Task ProcessDeadLetterQueueAsync_WhenTokenCancelledBetweenIterations_ExitsNormally()
+    {
+        // Arrange
+        var cts = new CancellationTokenSource();
+        var router = new MessageChannelRouter();
+        var mockDLQ = new Mock<IDeadLetterQueue>();
+        mockDLQ
+            .Setup(x => x.GetMessagesForRetryAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
 
-    //    // Act
-    //    await transport.ReprocessDeadLetterQueueAsync();
-    //    await Task.Delay(TimeSpan.FromSeconds(2));
+        var transport = new InMemoryTransport(router, mockDLQ.Object);
 
-    //    // Assert
-    //    _mockDlq.Verify(q => q.GetAllMessagesAsync(CancellationToken.None), Times.AtLeastOnce);
-    //}
+        // Act
+        var task = transport.ProcessDeadLetterQueueAsync(cts.Token);
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        cts.Cancel();
+        await task;
 
+        // Assert
+        mockDLQ.Verify(x => x.GetMessagesForRetryAsync(It.IsAny<CancellationToken>()),
+            Times.AtLeastOnce());
+    }
 
 }

@@ -2,10 +2,13 @@
 
   <PropertyGroup>
 	<TargetFramework>net8.0</TargetFramework>
-	<Nullable>enable</Nullable>
 	<ImplicitUsings>enable</ImplicitUsings>
 	<LangVersion>latest</LangVersion>
+	<Nullable>enable</Nullable>
+	<CompileDesignTime>true</CompileDesignTime>
 	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+	<IsRoslynComponent>true</IsRoslynComponent>
 
 	<!-- Package metadata -->
 	<PackageId>NanoBus.Transports.Demo</PackageId>
@@ -19,6 +22,7 @@
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
 
 	<!-- Trim and AOT readiness -->
 	<PublishTrimmed>true</PublishTrimmed>
@@ -35,10 +39,20 @@
 
   <!-- Dependencies -->
   <ItemGroup>
+	<!-- PrivateAssets="all" prevents these from becoming transitive dependencies -->
+	<!-- Use the version bundled with your SDK; for .NET 10, that is 4.12.0 or later -->
+	<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="all" />
+	<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
 	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
+	<PackageReference Include="System.Text.Json" Version="10.0.12" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NanoBus.Core\NanoBus.Core.csproj" />
+	<ProjectReference Include="..\NanoBus.Core\NanoBus.Core.csproj" OutputItemType="Analyzer" />
   </ItemGroup>
+  
+    <ItemGroup>
+	<Compile Include="..\NanoBus.Core\MessageHandlerExtensionsGenerator.cs" Link="MessageHandlerExtensionsGenerator.cs" />
+  </ItemGroup>
+
 
 </Project>
