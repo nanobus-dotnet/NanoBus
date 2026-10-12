@@ -1,4 +1,4 @@
-# Contributing to NanoBus.Net
+# Contributing to NanoBus
 
 Thank you for your interest in contributing to **NanoBus**. This document outlines how to contribute using **GitHub Flow**, our simple branching workflow.
 
