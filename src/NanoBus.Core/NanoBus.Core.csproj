@@ -13,7 +13,7 @@
 	<!-- Package metadata -->
 	<PackageId>NanoBus.Core</PackageId>
 	<Title>NanoBus Core</Title>
-	<Version>0.0.1-alpha.1</Version>
+	<Version>0.1.0</Version>
 	<Description>Lightweight, AOT-first core implementations for NanoBus.</Description>
 	<Authors>Wayland Young</Authors>
 	<RepositoryUrl>https://github.com/nanobus-dotnet/nanobus</RepositoryUrl>
