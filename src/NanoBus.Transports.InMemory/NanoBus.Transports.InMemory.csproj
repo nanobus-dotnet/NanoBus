@@ -12,7 +12,7 @@
 	<!-- Package metadata -->
 	<PackageId>NanoBus.Transports.InMemory</PackageId>
 	<Title>NanoBus In-Memory Transport</Title>
-	<Version>0.0.1-alpha.1</Version>
+	<Version>0.1.0</Version>
 	<Description>Lightweight, AOT-first in-memory transport for NanoBus.</Description>
 	<Authors>Wayland Young</Authors>
 	<RepositoryUrl>https://github.com/nanobus-dotnet/nanobus</RepositoryUrl>
