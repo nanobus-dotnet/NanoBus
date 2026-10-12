@@ -13,9 +13,10 @@
 	<!-- Package metadata -->
 	<PackageId>NanoBus.Transports.Demo</PackageId>
 	<Title>NanoBus Demo Transport</Title>
-	<Version>0.1.0</Version>
+	<Version>0.1.1</Version>
 	<Description>Lightweight, AOT-first demo/learning transport for NanoBus.</Description>
 	<Authors>Wayland Young</Authors>
+	<PackageProjectUrl>https://github.com/nanobus-dotnet</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/nanobus-dotnet/nanobus</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
 	<License>MIT</License>
