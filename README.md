@@ -135,7 +135,7 @@ public class OrderPlacedHandler : IHandleMessages<OrderPlaced>
 }
 ```
 
-**MassTransit (with In-Memory Transport)**
+### MassTransit (with In-Memory Transport)
 ```csharp
 // Step 0: NuGet packages
 // Install-Package MassTransit

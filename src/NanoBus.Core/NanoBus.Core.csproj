@@ -10,19 +10,6 @@
 	<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 	<IsRoslynComponent>true</IsRoslynComponent>
 
-	<!-- Package metadata -->
-	<PackageId>NanoBus.Core</PackageId>
-	<Title>NanoBus Core</Title>
-	<Version>0.1.0</Version>
-	<Description>Lightweight, AOT-first core implementations for NanoBus.</Description>
-	<Authors>Wayland Young</Authors>
-	<RepositoryUrl>https://github.com/nanobus-dotnet/nanobus</RepositoryUrl>
-	<RepositoryType>git</RepositoryType>
-	<License>MIT</License>
-	<PackageLicenseExpression>MIT</PackageLicenseExpression>
-	<PackageReadmeFile>README.md</PackageReadmeFile>
-	<GenerateDocumentationFile>true</GenerateDocumentationFile>
-
 	<!-- Trim and AOT readiness -->
 	<PublishTrimmed>true</PublishTrimmed>
 	<TrimMode>full</TrimMode>

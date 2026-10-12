@@ -2,9 +2,10 @@
 
   <PropertyGroup>
 	<TargetFramework>net8.0</TargetFramework>
-	<Nullable>enable</Nullable>
 	<ImplicitUsings>enable</ImplicitUsings>
 	<LangVersion>latest</LangVersion>
+	<Nullable>enable</Nullable>
+	<CompileDesignTime>true</CompileDesignTime>
 	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 	<IsRoslynComponent>true</IsRoslynComponent>
@@ -12,9 +13,10 @@
 	<!-- Package metadata -->
 	<PackageId>NanoBus.Transports.InMemory</PackageId>
 	<Title>NanoBus In-Memory Transport</Title>
-	<Version>0.1.0</Version>
+	<Version>0.1.1</Version>
 	<Description>Lightweight, AOT-first in-memory transport for NanoBus.</Description>
 	<Authors>Wayland Young</Authors>
+	<PackageProjectUrl>https://github.com/nanobus-dotnet</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/nanobus-dotnet/nanobus</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
 	<License>MIT</License>
