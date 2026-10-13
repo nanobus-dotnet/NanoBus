@@ -54,7 +54,8 @@ public class MessageChannelRouter(int boundedChannelCapacity = 100) : IMessageCh
     /// <inheritdoc />
     public async IAsyncEnumerable<string> GetPendingMessageTypesAsync([EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var typeName in _channelNotification.Reader.ReadAllAsync(cancellationToken))
+        await foreach (var typeName in _channelNotification.Reader.ReadAllAsync(cancellationToken)
+            .ConfigureAwait(false))
         {
             yield return typeName;
         }

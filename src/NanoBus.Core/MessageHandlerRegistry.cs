@@ -6,7 +6,7 @@ using NanoBus.Abstractions;
 namespace NanoBus.Core;
 
 /// <summary>
-/// 
+/// Registry for all message handlers implementing IMessageHandler.
 /// </summary>
 public class MessageHandlerRegistry(ILogger? logger = null)
 {
@@ -15,16 +15,12 @@ public class MessageHandlerRegistry(ILogger? logger = null)
     private readonly ConcurrentDictionary<string, ConcurrentBag<Func<IMessage, MessageContext, CancellationToken, Task>>> _handlers = [];
 
     /// <summary>
-    /// 
+    /// Registers the handler of a given message type.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="handler"></param>
-    /// <exception cref="InvalidOperationException"></exception>
+    /// <typeparam name="T">The message type being handled.</typeparam>
+    /// <param name="handler">The handler of the message.</param>
     public void RegisterHandler<T>(IMessageHandler<T> handler) where T : IMessage
     {
-        if (handler is null)
-            throw new InvalidOperationException("Null handlers are not allowed.");
-
         var messageType = typeof(T).FullName!;
 
         var typeHandlers = _handlers.GetOrAdd(messageType, _ => []);
@@ -48,7 +44,7 @@ public class MessageHandlerRegistry(ILogger? logger = null)
     /// </summary>
     /// <param name="messageType">The message type.</param>
     /// <returns>The collection of handlers that handle the message type.</returns>
-    public ConcurrentBag<Func<IMessage, MessageContext, CancellationToken, Task>> GetHandlers(string messageType)
+    public IReadOnlyList<Func<IMessage, MessageContext, CancellationToken, Task>> GetHandlers(string messageType)
     {
         if (!_handlers.TryGetValue(messageType, out var typeHandlers))
         {
@@ -56,6 +52,6 @@ public class MessageHandlerRegistry(ILogger? logger = null)
             throw new InvalidOperationException($"No handlers registered for type '{messageType}'");
         }
 
-        return typeHandlers;
+        return [.. typeHandlers];
     }
 }

@@ -27,7 +27,7 @@ public class InMemoryTransportTests : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        await _transport.StopAsync();
+        await _transport.DisposeAsync();
     }
 
 
@@ -88,9 +88,17 @@ public class InMemoryTransportTests : IAsyncLifetime
         true.ShouldBeTrue();
     }
 
+    //[Fact]
+    //public async Task StartAsync_WithCanceledToken_ShouldPerformCleanup()
+    //{
+    //    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+
+    //    await _transport.StartAsync(cts.Token);  
+    //}
+
 
     [Fact]
-    public async Task PublishAsync_ThrowsInvalidOperationException_WhenNoHandlersRegistered()
+    public async Task PublishAsync_ShouldThrowInvalidOperationException_WhenNoHandlersRegistered()
     {
         // Arrange
         var message = new TestMessage { Value = "test" };
@@ -152,7 +160,7 @@ public class InMemoryTransportTests : IAsyncLifetime
 
 
     [Fact]
-    public async Task SendAsync_ThrowsInvalidOperationException_WhenNoHandlersRegistered()
+    public async Task SendAsync_ShouldThrowInvalidOperationException_WhenNoHandlersRegistered()
     {
         // Arrange
         var message = new TestMessage { Value = "test" };
@@ -306,19 +314,78 @@ public class InMemoryTransportTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task StopAsync_ThrowsIfCancellationRequested()
+    public async Task StopAsync_ShouldThrowIfCancellationRequested()
     {
         // Arrange
         var cts = new CancellationTokenSource();
         cts.Cancel();
 
         // Act & Assert
-        await Assert.ThrowsAsync<OperationCanceledException>(
-            () => _transport.StopAsync(cts.Token));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => _transport.StopAsync(cts.Token));
     }
 
     [Fact]
-    public async Task PublishAsync_EnqueuesMessageToDLQ_WhenHandlerThrows()
+    public async Task StartAsync_ShouldThrowIfAlreadyStarted()
+    {
+        // Arrange
+        await _transport.StartAsync();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => _transport.StartAsync());
+    }
+
+    [Fact]
+    public async Task DisposeAsync_ShouldNotThrowException()
+    {
+        // Arrange, Act & Assert
+        await _transport.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task DisposeAsyncWhenStarted_ShouldNotThrowException()
+    {
+        // Arrange
+        await _transport.StartAsync();
+
+        // Act & Assert
+        await _transport.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task DisposeAsync_WhenStopped_ShouldNotThrowException()
+    {
+        // Arrange
+        await _transport.StopAsync();
+
+        // Act & Assert
+        await _transport.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task DisposeAsync_WhenStartedAndStopped_ShouldNotThrowException()
+    {
+        // Arrange
+        await _transport.StartAsync();
+        await _transport.StopAsync();
+
+        // Act & Assert
+        await _transport.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task DisposeAsync_Twice_ShouldNotThrowException()
+    {
+        // Arrange
+        await _transport.StartAsync();
+        await _transport.StopAsync();
+
+        // Act & Assert
+        await _transport.DisposeAsync();
+    }
+
+
+    [Fact]
+    public async Task PublishAsync_ShouldEnqueuesMessageToDLQ_WhenHandlerThrows()
     {
         // Arrange
         var handler = new AlwaysFailsHandler();
@@ -339,7 +406,7 @@ public class InMemoryTransportTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task SendAsync_EnqueuesMessageToDLQ_WhenHandlerThrows()
+    public async Task SendAsync_ShouldEnqueuesMessageToDLQ_WhenHandlerThrows()
     {
         // Arrange
         var handler = new AlwaysFailsHandler();
@@ -523,16 +590,8 @@ public class InMemoryTransportTests : IAsyncLifetime
 
         var message = new TestMessage { Value = "retry-send" };
 
-        await dlq.EnqueueAsync(
-            message,
-            typeof(TestMessage).FullName!,
-            MessageMethod.Send,
-            new MessageContext(null!),
-            DateTime.UtcNow,
-            1,
-            new Exception("Original failure"),
-            CancellationToken.None,
-            CancellationToken.None);
+        await dlq.EnqueueAsync(message, typeof(TestMessage).FullName!, MessageMethod.Send, new MessageContext(null!), DateTime.UtcNow, 1, 
+            new Exception("Original failure"), CancellationToken.None, CancellationToken.None);
 
         // Act
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));

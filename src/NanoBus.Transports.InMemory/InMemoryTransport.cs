@@ -13,7 +13,7 @@ namespace NanoBus.Transports.InMemory;
 /// <param name="deadLetterQueue">The dead letter queue.</param>
 /// <param name="options">The options used.</param>
 /// <param name="logger">The logger.</param>
-public partial class InMemoryTransport(IMessageChannelRouter channelManager, IDeadLetterQueue deadLetterQueue, InMemoryTransportOptions? options = null, ILogger<InMemoryTransport>? logger = null) : ITransport
+public class InMemoryTransport(IMessageChannelRouter channelManager, IDeadLetterQueue deadLetterQueue, InMemoryTransportOptions? options = null, ILogger<InMemoryTransport>? logger = null) : ITransport, IAsyncDisposable
 {
     private readonly InMemoryTransportOptions _options = options ?? new();
     private readonly ILogger<InMemoryTransport> _logger = logger ?? NullLogger<InMemoryTransport>.Instance;
@@ -48,6 +48,8 @@ public partial class InMemoryTransport(IMessageChannelRouter channelManager, IDe
     /// </summary>
     private readonly MessageHandlerRegistry _handlerRegistry = new(logger);
 
+    private bool _isDisposed = false;
+
     /// <inheritdoc />
     public void RegisterHandler<T>(IMessageHandler<T> handler) where T : IMessage
     {
@@ -79,6 +81,9 @@ public partial class InMemoryTransport(IMessageChannelRouter channelManager, IDe
     /// <inheritdoc />
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
+        if (_isStarted)
+            throw new InvalidOperationException("Transport is already started.");
+
         cancellationToken.ThrowIfCancellationRequested();
 
         // Start the background task to deliver messages.
@@ -95,8 +100,9 @@ public partial class InMemoryTransport(IMessageChannelRouter channelManager, IDe
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        await _tokenSource.CancelAsync()
-            .ConfigureAwait(false);
+        if (!_tokenSource.IsCancellationRequested)
+            await _tokenSource.CancelAsync()
+                .ConfigureAwait(false);
 
         _messageChannelRouter.CompleteAll();
 
@@ -148,7 +154,7 @@ public partial class InMemoryTransport(IMessageChannelRouter channelManager, IDe
     /// <returns>The task to deliver all messages.</returns>
     private async Task DeliverMessagesAsync(CancellationToken cancellationToken)
     {
-        var processingTasks = new Dictionary<string, Task>();
+        var processingTasks = new ConcurrentDictionary<string, Task>();
 
         try
         {
@@ -158,8 +164,7 @@ public partial class InMemoryTransport(IMessageChannelRouter channelManager, IDe
                 // Only spawn one processing task per type if not already running.
                 if (!processingTasks.ContainsKey(messageType))
                 {
-                    var task = ProcessChannelAsync(messageType, cancellationToken)
-                        .ContinueWith(_ => processingTasks.Remove(messageType), cancellationToken);
+                    var task = ProcessWithCleanupAsync(processingTasks, messageType, cancellationToken);
                     processingTasks[messageType] = task;
                 }
             }
@@ -175,13 +180,27 @@ public partial class InMemoryTransport(IMessageChannelRouter channelManager, IDe
 
         try // Wait for all processing tasks to complete.
         {
-            await Task.WhenAll(processingTasks.Values).ConfigureAwait(false);
+            await Task.WhenAll(processingTasks.Values)
+                .ConfigureAwait(false);
         }
         catch (OperationCanceledException) // Expected during shutdown.
         {
         }
     }
 
+    /// <summary>
+    /// Cleans up after tasks have completed.
+    /// </summary>
+    /// <param name="processingTasks">The items to remove the task from.</param>
+    /// <param name="messageType">The message type of the given task.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    private async Task ProcessWithCleanupAsync(ConcurrentDictionary<string, Task> processingTasks, string messageType, CancellationToken cancellationToken)
+    {
+        await ProcessChannelAsync(messageType, cancellationToken)
+            .ConfigureAwait(false);
+
+        processingTasks.TryRemove(messageType, out _);
+    }
 
     /// <summary>
     /// Processes the channel by message type.
@@ -192,28 +211,15 @@ public partial class InMemoryTransport(IMessageChannelRouter channelManager, IDe
     private async Task ProcessChannelAsync(string messageType, CancellationToken cancellationToken)
     {
         // Read all messages in the channel.
-        await foreach (var (message, method, context, invokerToken) in _messageChannelRouter.ReadAllAsync(messageType, cancellationToken))
+        await foreach (var (message, method, context, invokerToken) in _messageChannelRouter.ReadAllAsync(messageType, cancellationToken)
+            .ConfigureAwait(false))
         {
             var handlers = _handlerRegistry.GetHandlers(messageType);
 
             try // Invoke the handlers for each message.
             {
-                switch (method)
-                {
-                    case MessageMethod.Send:
-                        if (handlers.Count > 1)
-                            _logger.LogWarning("More than one handler for sent message type '{MessageType}'", messageType);
-
-                        await handlers.First().Invoke(message, context, invokerToken)
-                            .ConfigureAwait(false);
-                        break;
-                    case MessageMethod.Publish:
-                        var publishTasks = handlers.Select(h => h.Invoke(message, context, invokerToken)).ToList();
-
-                        await Task.WhenAll(publishTasks)
-                            .ConfigureAwait(false);
-                        break;
-                }
+                await InvokeHandlersAsync(messageType, handlers, message, method, context, invokerToken)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -244,7 +250,8 @@ public partial class InMemoryTransport(IMessageChannelRouter channelManager, IDe
 
                     try // Attempt redelivery.
                     {
-                        await SendMessageByMethod(messageType, message, method, context, handlers, token).ConfigureAwait(false);
+                        await InvokeHandlersAsync(messageType, handlers, message, method, context, token)
+                            .ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -253,7 +260,8 @@ public partial class InMemoryTransport(IMessageChannelRouter channelManager, IDe
                     }
                 }
 
-                await Task.Delay(_options.DeadLetterPollingDelay, cancellationToken); // Check only on the given interval.
+                await Task.Delay(_options.DeadLetterPollingDelay, cancellationToken)
+                    .ConfigureAwait(false); // Check only on the given interval.
             }
         }
         catch (OperationCanceledException) // Expected exception.
@@ -266,23 +274,21 @@ public partial class InMemoryTransport(IMessageChannelRouter channelManager, IDe
         }
     }
 
-    private async Task SendMessageByMethod(string messageType, IMessage message, MessageMethod method, 
-        MessageContext context, ConcurrentBag<Func<IMessage, MessageContext, CancellationToken, Task>> handlers, CancellationToken token)
+    /// <summary>
+    /// Invokes message handlers by message type and method.
+    /// </summary>
+    private async Task InvokeHandlersAsync(string messageType, IReadOnlyList<Func<IMessage, MessageContext, CancellationToken, Task>> handlers, IMessage message, MessageMethod method, MessageContext context, CancellationToken token)
     {
         switch (method)
         {
             case MessageMethod.Send:
                 if (handlers.Count > 1)
                     _logger.LogWarning("More than one handler for sent message type '{MessageType}'", messageType);
-
-                await handlers.First().Invoke(message, context, token)
+                await handlers[0].Invoke(message, context, token)
                     .ConfigureAwait(false);
                 break;
-
             case MessageMethod.Publish:
-                var publishTasks = handlers.Select(h => h.Invoke(message, context, token)).ToList();
-
-                await Task.WhenAll(publishTasks)
+                await Task.WhenAll(handlers.Select(h => h.Invoke(message, context, token)))
                     .ConfigureAwait(false);
                 break;
         }
@@ -356,4 +362,30 @@ public partial class InMemoryTransport(IMessageChannelRouter channelManager, IDe
         await _deadLetterQueue.ClearQueueAsync(cancellationToken)
             .ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Asynchronously disposes of all resources.
+    /// </summary>
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsyncCore()
+            .ConfigureAwait(false);
+
+        GC.SuppressFinalize(this);
+    }
+
+    private async ValueTask DisposeAsyncCore()
+    {
+        if (_isDisposed)
+            return;
+
+        if (_isStarted)
+            await StopAsync()
+                .ConfigureAwait(false);
+
+        _tokenSource.Dispose();
+
+        _isDisposed = true;
+    }
+
 }

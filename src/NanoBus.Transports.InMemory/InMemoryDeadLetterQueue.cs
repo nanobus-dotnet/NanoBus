@@ -17,7 +17,10 @@ public class InMemoryDeadLetterQueue(ILogger<InMemoryDeadLetterQueue>? logger = 
     /// <inheritdoc />
     public int MaxDeliveryAttempts { get; set; } = 4;
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Enqueues a failed message with exponential backoff retry scheduling.
+    /// </summary>
+    /// <returns>The unique Id of the enqueued message.</returns>
     public ValueTask<string> EnqueueAsync(IMessage message, string messageType, MessageMethod method, MessageContext context, DateTime lastFailedOn, int deliveryAttempt, Exception lastError, CancellationToken invokerToken, CancellationToken cancellationToken)
     {
         if (deliveryAttempt <= 0)
@@ -58,15 +61,15 @@ public class InMemoryDeadLetterQueue(ILogger<InMemoryDeadLetterQueue>? logger = 
 
     /// <inheritdoc />
     public ValueTask<IEnumerable<FailedMessage>> GetMessagesForRetryAsync(CancellationToken cancellationToken)
-        => ValueTask.FromResult(_queue.Values.Where(m => m.NextRetryTime <= DateTime.UtcNow && m.DeliveryAttempts <= MaxDeliveryAttempts));
+        => ValueTask.FromResult(_queue.Values.ToList().Where(m => m.NextRetryTime <= DateTime.UtcNow && m.DeliveryAttempts <= MaxDeliveryAttempts));
 
     /// <inheritdoc />
     public ValueTask<IEnumerable<FailedMessage>> GetAllMessagesAsync(CancellationToken cancellationToken)
-        => ValueTask.FromResult(_queue.Values.AsEnumerable());
+        => ValueTask.FromResult(_queue.Values.ToList().AsEnumerable());
 
     /// <inheritdoc />
     public ValueTask<IEnumerable<FailedMessage>> GetAllFailedMessagesAsync(CancellationToken cancellationToken)
-        => ValueTask.FromResult(_queue.Values.Where(m => m.DeliveryAttempts > MaxDeliveryAttempts));
+        => ValueTask.FromResult(_queue.Values.ToList().Where(m => m.DeliveryAttempts > MaxDeliveryAttempts));
 
     /// <inheritdoc />
     public ValueTask<FailedMessage?> GetMessageAsync(string uniqueId, CancellationToken cancellationToken)
