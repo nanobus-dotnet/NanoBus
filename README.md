@@ -42,9 +42,7 @@ Want to run the benchmarks yourself?
 
 ```bash
 dotnet run -p Benchmarks/NanoBus.Benchmarks -c Release
-
 ```
-
 
 ## Learning Path
 

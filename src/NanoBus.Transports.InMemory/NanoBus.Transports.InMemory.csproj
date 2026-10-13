@@ -13,7 +13,7 @@
 	<!-- Package metadata -->
 	<PackageId>NanoBus.Transports.InMemory</PackageId>
 	<Title>NanoBus In-Memory Transport</Title>
-	<Version>0.1.1</Version>
+	<Version>0.1.2</Version>
 	<Description>Lightweight, AOT-first in-memory transport for NanoBus.</Description>
 	<Authors>Wayland Young</Authors>
 	<PackageProjectUrl>https://github.com/nanobus-dotnet</PackageProjectUrl>
@@ -46,12 +46,12 @@
 	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
 	<PackageReference Include="System.Text.Json" Version="10.0.12" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="..\NanoBus.Core\NanoBus.Core.csproj" />
+	<ProjectReference Include="..\NanoBus.Core\NanoBus.Core.csproj" />
   </ItemGroup>
-  
-    <ItemGroup>
+
+  <ItemGroup>
 	<Compile Include="..\NanoBus.Core\MessageHandlerExtensionsGenerator.cs" Link="MessageHandlerExtensionsGenerator.cs" />
   </ItemGroup>
 
