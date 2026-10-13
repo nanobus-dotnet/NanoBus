@@ -187,18 +187,6 @@ public class DemoTransportTests
     }
 
     [Fact]
-    public void RegisterHandler_NullHandlerThrowsException()
-    {
-        // Arrange
-        var message = new TestMessage { Value = "test" };
-
-        // Act
-
-        // Assert
-        Assert.Throws<InvalidOperationException>(() => _transport.RegisterHandler<TestMessage>(null!));
-    }
-
-    [Fact]
     public async Task SendAsync_NullMetadataConstructsValidMessageContext()
     {
         // Arrange

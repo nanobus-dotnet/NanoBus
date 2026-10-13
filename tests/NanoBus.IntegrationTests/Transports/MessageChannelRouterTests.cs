@@ -115,7 +115,7 @@ public class MessageChannelRouterTests
     }
 
     [Fact]
-    public async Task ReadAllAsync_NoMessageRegistered_ShouldThrowException()
+    public async Task ReadAllAsync_ShouldThrowException_WhenNoMessageRegistered()
     {
         // Arrange
         var router = new MessageChannelRouter();

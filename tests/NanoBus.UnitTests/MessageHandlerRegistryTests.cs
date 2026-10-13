@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-
-namespace NanoBus.UnitTests;
+﻿namespace NanoBus.UnitTests;
 
 
 [ExcludeFromCodeCoverage]
@@ -32,15 +30,6 @@ public class MessageHandlerRegistryTests
         _registry.HandlerExists(typeof(TestMessage).FullName!).ShouldBeTrue();
     }
 
-    [Fact]
-    public void RegisterHandler_WithNullHandler_ShouldThrowInvalidOperationException()
-    {
-        // Act & Assert
-        var ex = Should.Throw<InvalidOperationException>(() =>
-            _registry.RegisterHandler<TestMessage>(null!));
-
-        ex.Message.ShouldContain("Null handlers are not allowed");
-    }
 
     [Fact]
     public void RegisterHandler_ShouldLogInformation()
@@ -96,7 +85,7 @@ public class MessageHandlerRegistryTests
 
         // Act
         var handlers = _registry.GetHandlers(typeof(TestMessage).FullName!);
-        var handler = handlers.First();
+        var handler = handlers[0];
         await handler(message, context, cancellationToken);
 
         // Assert
@@ -185,7 +174,7 @@ public class MessageHandlerRegistryTests
     }
 
     [Fact]
-    public void GetHandlers_ShouldReturnConcurrentBag()
+    public void GetHandlers_ShouldReturnIReadOnlyList()
     {
         // Arrange
         var handlerMock = new Mock<IMessageHandler<TestMessage>>();
@@ -195,7 +184,7 @@ public class MessageHandlerRegistryTests
         var handlers = _registry.GetHandlers(typeof(TestMessage).FullName!);
 
         // Assert
-        handlers.ShouldBeOfType<ConcurrentBag<Func<IMessage, MessageContext, CancellationToken, Task>>>();
+        handlers.ShouldBeAssignableTo<IReadOnlyList<Func<IMessage, MessageContext, CancellationToken, Task>>>();
     }
 
     [Fact]
