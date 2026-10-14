@@ -12,5 +12,5 @@ public interface IMessageHandler<T> where T : IMessage
     /// <param name="message">The message that was sent or published from the bus.</param>
     /// <param name="context">The context of the message that was sent or published.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    ValueTask HandleAsync(T message, MessageContext context, CancellationToken cancellationToken = default);
+    ValueTask HandleAsync(T message, MessageContext context, CancellationToken cancellationToken);
 }

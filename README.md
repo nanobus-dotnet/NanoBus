@@ -78,19 +78,18 @@ A few things to know:
 ### NanoBus
 
 ```csharp
-// Step 0: NuGet packages
 // Install-Package NanoBus.Transports.InMemory
 
-// Program.cs — Absolutely nothing. Zero ceremony.
+// Program.cs — Zero ceremony.
 var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddInMemoryServiceBus(); // Override config if necessary.
+builder.Services.AddInMemoryServiceBus(); // Override default config if necessary.
 var host = builder.Build();
 await host.RunAsync();
 
 // Handler (simple, auto-discovered)
 public class OrderSubmittedHandler : IMessageHandler<OrderSubmitted>
 {
-    public ValueTask HandleAsync(OrderSubmitted message, MessageContext context, CancellationToken cancellationToken = default)
+    public ValueTask HandleAsync(OrderSubmitted msg, MessageContext ctx, CancellationToken ct)
     {
         // Handle
     }
