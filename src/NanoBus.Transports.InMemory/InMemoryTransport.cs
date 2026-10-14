@@ -159,7 +159,8 @@ public class InMemoryTransport(IMessageChannelRouter channelManager, IDeadLetter
         try
         {
             // Listen for notifications of new message types.
-            await foreach (var messageType in _messageChannelRouter.GetPendingMessageTypesAsync(cancellationToken))
+            await foreach (var messageType in _messageChannelRouter.GetPendingMessageTypesAsync(cancellationToken)
+                .WithCancellation(cancellationToken))
             {
                 // Only spawn one processing task per type if not already running.
                 if (!processingTasks.ContainsKey(messageType))
@@ -212,6 +213,7 @@ public class InMemoryTransport(IMessageChannelRouter channelManager, IDeadLetter
     {
         // Read all messages in the channel.
         await foreach (var (message, method, context, invokerToken) in _messageChannelRouter.ReadAllAsync(messageType, cancellationToken)
+            .WithCancellation(cancellationToken)
             .ConfigureAwait(false))
         {
             var handlers = _handlerRegistry.GetHandlers(messageType);

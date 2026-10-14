@@ -81,9 +81,9 @@ A few things to know:
 // Step 0: NuGet packages
 // Install-Package NanoBus.Transports.InMemory
 
-// Program.cs — absolutely nothing. Zero ceremony.
+// Program.cs — Absolutely nothing. Zero ceremony.
 var builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddInMemoryServiceBus();
+builder.Services.AddInMemoryServiceBus(); // Override config if necessary.
 var host = builder.Build();
 await host.RunAsync();
 
