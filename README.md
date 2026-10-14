@@ -1,11 +1,7 @@
 # NanoBus
+**NanoBus** is a compile-time message routing bus for .NET. Zero reflection, zero runtime surprises. It values compile-time safety, cold startup performance, and AOT compatibility. Handlers are auto-registered via source generation—no runtime magic, no surprising reflection costs.
 
-Compile-time message routing for .NET. Zero reflection, zero runtime surprises.
-
-**NanoBus** is a message bus for .NET services that value compile-time safety, cold startup performance, and AOT compatibility. Handlers are auto-registered via source generation—no runtime magic, no surprising reflection costs.
-
-This is useful if you're working on serverless functions (cold starts matter), shipping containers (startup speed counts), or just prefer knowing exactly what your code does at runtime.
-
+It’s useful if you're working on serverless functions (cold starts matter), shipping containers (startup speed counts), or just prefer knowing exactly what your code does at runtime.
 
 ## Features
 
