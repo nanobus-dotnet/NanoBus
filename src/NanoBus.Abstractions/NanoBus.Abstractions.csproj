@@ -10,7 +10,7 @@
 	<!-- Package metadata -->
 	<PackageId>NanoBus.Abstractions</PackageId>
 	<Title>NanoBus Abstractions</Title>
-	<Version>0.1.1</Version>
+	<Version>0.1.3</Version>
 	<Description>Lightweight, AOT-first abstractions for NanoBus implementations.</Description>
 	<Authors>Wayland Young</Authors>
 	<PackageProjectUrl>https://github.com/nanobus-dotnet</PackageProjectUrl>
