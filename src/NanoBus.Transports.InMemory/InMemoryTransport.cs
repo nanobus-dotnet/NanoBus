@@ -279,7 +279,7 @@ public class InMemoryTransport(IMessageChannelRouter channelManager, IDeadLetter
     /// <summary>
     /// Invokes message handlers by message type and method.
     /// </summary>
-    private async Task InvokeHandlersAsync(string messageType, IReadOnlyList<Func<IMessage, MessageContext, CancellationToken, Task>> handlers, IMessage message, MessageMethod method, MessageContext context, CancellationToken token)
+    private async Task InvokeHandlersAsync(string messageType, IReadOnlyList<Func<IMessage, MessageContext, CancellationToken, ValueTask>> handlers, IMessage message, MessageMethod method, MessageContext context, CancellationToken token)
     {
         switch (method)
         {
@@ -290,7 +290,7 @@ public class InMemoryTransport(IMessageChannelRouter channelManager, IDeadLetter
                     .ConfigureAwait(false);
                 break;
             case MessageMethod.Publish:
-                await Task.WhenAll(handlers.Select(h => h.Invoke(message, context, token)))
+                await Task.WhenAll(handlers.Select(h => h.Invoke(message, context, token).AsTask()))
                     .ConfigureAwait(false);
                 break;
         }
