@@ -174,7 +174,7 @@ public class MessageHandlerRegistryTests
     }
 
     [Fact]
-    public void GetHandlers_ShouldReturnIReadOnlyList()
+    public void GetHandlers_ShouldBeAssignableToIReadOnlyList()
     {
         // Arrange
         var handlerMock = new Mock<IMessageHandler<TestMessage>>();
@@ -184,7 +184,7 @@ public class MessageHandlerRegistryTests
         var handlers = _registry.GetHandlers(typeof(TestMessage).FullName!);
 
         // Assert
-        handlers.ShouldBeAssignableTo<IReadOnlyList<Func<IMessage, MessageContext, CancellationToken, Task>>>();
+        handlers.ShouldBeAssignableTo<IReadOnlyList<Func<IMessage, MessageContext, CancellationToken, ValueTask>>>();
     }
 
     [Fact]

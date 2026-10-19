@@ -85,24 +85,6 @@ public class InMemoryDeadLetterQueueTests
         ids.ShouldNotContain(futureId);
     }
 
-    //[Fact]
-    //public async Task GetMessagesForRetryAsync_ShouldNotReturnMessagesExceedingMaxDeliveryAttempts()
-    //{
-    //    // Arrange
-    //    _dlq.MaxDeliveryAttempts = 4;
-    //    var id = await _dlq.EnqueueAsync(_testMessage, "Type", MessageMethod.Send, _messageContext, DateTime.UtcNow.AddSeconds(-100), 1, _testException, CancellationToken.None, CancellationToken.None);
-
-    //    await _dlq.UpdateMessageRetryAsync(id, 1, _testException, CancellationToken.None, CancellationToken.None);
-    //    await _dlq.UpdateMessageRetryAsync(id, 2, _testException, CancellationToken.None);
-    //    await _dlq.UpdateMessageRetryAsync(id, 3, _testException, CancellationToken.None);
-
-    //    // Act
-    //    var messagesToRetry = await _dlq.GetMessagesForRetryAsync(CancellationToken.None);
-
-    //    // Assert
-    //    messagesToRetry.ShouldBeEmpty();
-    //}
-
     [Fact]
     public async Task GetAllMessagesAsync_ShouldReturnAllMessages()
     {

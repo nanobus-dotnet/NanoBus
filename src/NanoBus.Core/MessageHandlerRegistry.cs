@@ -12,7 +12,7 @@ public class MessageHandlerRegistry(ILogger? logger = null)
 {
     private readonly ILogger _logger = logger ?? NullLogger.Instance;
 
-    private readonly ConcurrentDictionary<string, ConcurrentBag<Func<IMessage, MessageContext, CancellationToken, Task>>> _handlers = [];
+    private readonly ConcurrentDictionary<string, ConcurrentBag<Func<IMessage, MessageContext, CancellationToken, ValueTask>>> _handlers = [];
 
     /// <summary>
     /// Registers the handler of a given message type.
@@ -44,7 +44,7 @@ public class MessageHandlerRegistry(ILogger? logger = null)
     /// </summary>
     /// <param name="messageType">The message type.</param>
     /// <returns>The collection of handlers that handle the message type.</returns>
-    public IReadOnlyList<Func<IMessage, MessageContext, CancellationToken, Task>> GetHandlers(string messageType)
+    public IReadOnlyList<Func<IMessage, MessageContext, CancellationToken, ValueTask>> GetHandlers(string messageType)
     {
         if (!_handlers.TryGetValue(messageType, out var typeHandlers))
         {

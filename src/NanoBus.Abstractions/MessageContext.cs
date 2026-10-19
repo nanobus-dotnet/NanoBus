@@ -34,7 +34,7 @@ public class MessageContext(ITransport transport, string? messageId = null, stri
     /// <param name="metadata"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task SendAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
+    public async ValueTask SendAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
     {
         await _transport.SendAsync(message, metadata, cancellationToken)
             .ConfigureAwait(false);
@@ -48,7 +48,7 @@ public class MessageContext(ITransport transport, string? messageId = null, stri
     /// <param name="metadata"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task PublishAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
+    public async ValueTask PublishAsync<T>(T message, MessageMetadata? metadata = null, CancellationToken cancellationToken = default) where T : IMessage
     {
         await _transport.PublishAsync(message, metadata, cancellationToken)
             .ConfigureAwait(false);
