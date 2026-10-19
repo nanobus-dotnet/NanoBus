@@ -88,15 +88,6 @@ public class InMemoryTransportTests : IAsyncLifetime
         true.ShouldBeTrue();
     }
 
-    //[Fact]
-    //public async Task StartAsync_WithCanceledToken_ShouldPerformCleanup()
-    //{
-    //    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-
-    //    await _transport.StartAsync(cts.Token);  
-    //}
-
-
     [Fact]
     public async Task PublishAsync_ShouldThrowInvalidOperationException_WhenNoHandlersRegistered()
     {
