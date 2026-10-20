@@ -285,7 +285,7 @@ public class InMemoryTransport(IMessageChannelRouter channelManager, IDeadLetter
         {
             case MessageMethod.Send:
                 if (handlers.Count > 1)
-                    _logger.LogWarning("More than one handler for sent message type '{MessageType}'", messageType);
+                    _logger.LogWarning("More than one handler registered for message type '{MessageType}'. Only the first handler registered will receive the message.", messageType);
                 await handlers[0].Invoke(message, context, token)
                     .ConfigureAwait(false);
                 break;
