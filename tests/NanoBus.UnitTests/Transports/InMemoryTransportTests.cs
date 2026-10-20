@@ -92,7 +92,7 @@ public class InMemoryTransportTests
         await Task.Delay(TimeSpan.FromSeconds(1)); // Allow message loop to run.
 
         // Assert
-        _mockLogger.VerifyMessageContains("More than one handler for sent message type", LogLevel.Warning, Times.Once);
+        _mockLogger.VerifyMessageContains("More than one handler registered for sent message type", LogLevel.Warning, Times.Once);
     }
 
     [Fact]
@@ -143,7 +143,7 @@ public class InMemoryTransportTests
         await Task.Delay(TimeSpan.FromSeconds(1)); // Allow message loop to run.
 
         // Assert
-        _mockLogger.VerifyMessageContains("More than one handler for sent message type", LogLevel.Warning, Times.AtLeastOnce);
+        _mockLogger.VerifyMessageContains("More than one handler registered for sent message type", LogLevel.Warning, Times.AtLeastOnce);
     }
 
     [InlineData("")]

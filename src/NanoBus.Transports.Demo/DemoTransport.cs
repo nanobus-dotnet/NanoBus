@@ -60,7 +60,7 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
 
         if (typeHandlers.Count > 1)
         {
-            _logger.LogWarning("More than one handler registered for message type '{MessageType}'. Only the first handler registered will receive the message.", messageType);
+            _logger.LogWarning("More than one handler registered for sent message type '{MessageType}'. Only the first handler registered will receive the message.", messageType);
         }
 
         var context = new MessageContext(this, metadata?.MessageId, metadata?.CorrelationId, metadata?.Headers);
