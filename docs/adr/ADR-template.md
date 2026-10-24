@@ -35,6 +35,6 @@
 - [Add any notes.]
 
 ## References
-- Related ADRs: [ADR-XXX (ADR title)]
+- Related ADRs: [[ADR-XXX](./ADR-XXX.md) (ADR title)]
 - Structurizr Components: [`X`, `Y`, `Z`]
 
