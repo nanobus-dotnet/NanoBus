@@ -10,8 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NanoBus.Core\NanoBus.Core.csproj" />
-    <ProjectReference Include="..\..\src\NanoBus.Transports.Demo\NanoBus.Transports.Demo.csproj" />
+    <PackageReference Include="NanoBus.Transports.Demo" Version="0.1.8" />
   </ItemGroup>
 
 </Project>

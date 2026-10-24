@@ -416,7 +416,7 @@ public class InMemoryTransportTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetDeadLetterMessagesAsync_ReturnsAllMessages()
+    public async Task GetDeadLetterMessagesAsync_ShouldReturnAllMessages()
     {
         // Arrange
         var spyHandler = new AlwaysFailsHandler();

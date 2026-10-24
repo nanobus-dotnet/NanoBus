@@ -17,9 +17,11 @@ public static class InMemoryServiceBusExtensions
     /// <param name="options">The transport options to configure.</param>
     /// <param name="configure">Callback to late-bind bus configuration.</param>
     /// <returns>The configured service collection.</returns>
-    public static IServiceCollection AddInMemoryServiceBus(this IServiceCollection services, 
-        Action<InMemoryTransportOptions>? options = null, 
-        Action<IServiceProvider, ITransport>? configure = null)
+    public static IServiceCollection AddInMemoryServiceBus(
+        this IServiceCollection services,
+        Action<InMemoryTransportOptions>? options = null,
+        Action<IServiceProvider, ITransport>? configure = null
+        )
     {
         services.AddServiceBus(configure);
 

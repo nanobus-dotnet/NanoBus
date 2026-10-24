@@ -16,15 +16,14 @@
 
   <ItemGroup>
 	<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+	<PackageReference Include="NanoBusCore" Version="0.1.9" />
+	<PackageReference Include="NanoBus.Transports.Demo" Version="0.1.8" />
 	<PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
 	<PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <!--<ProjectReference Include="..\..\src\NanoBus.Core.SourceGeneration\NanoBus.Core.SourceGeneration.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />-->
-    <!--<ProjectReference Include="..\..\src\NanoBus.Transports.Demo.SourceGeneration\NanoBus.Transports.Demo.SourceGeneration.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
-    <!--<ProjectReference Include="..\..\src\NanoBus.Core\NanoBus.Core.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />-->
-    <ProjectReference Include="..\..\src\NanoBus.Transports.Demo\NanoBus.Transports.Demo.csproj" OutputItemType="Analyzer" />
+    <ProjectReference Include="..\ClientLibrary\ClientLibrary.csproj" />
   </ItemGroup>
 
 </Project>

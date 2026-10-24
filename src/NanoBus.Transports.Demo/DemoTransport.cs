@@ -38,7 +38,7 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
             {
                 try
                 {
-                    await handler(message, context, cancellationToken)
+                    await handler.Handler(message, context, cancellationToken)
                         .ConfigureAwait(false);
 
                     break;
@@ -71,7 +71,7 @@ public class DemoTransport(TransportOptions? options = null, ILogger<DemoTranspo
         {
             try
             {
-                await typeHandlers[0](message, context, cancellationToken)
+                await typeHandlers[0].Handler(message, context, cancellationToken)
                     .ConfigureAwait(false);
 
                 break;

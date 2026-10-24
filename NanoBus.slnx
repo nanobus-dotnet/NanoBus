@@ -9,9 +9,12 @@
     <Project Path="src/NanoBus.Core/NanoBus.Core.csproj" />
   </Folder>
   <Folder Name="/Examples/">
+    <Project Path="examples/ClientLibrary/ClientLibrary.csproj" />
     <Project Path="examples/DemoConsole/DemoConsole.csproj" />
     <Project Path="examples/DemoWorker/DemoWorker.csproj" />
+    <Project Path="examples/DlqWorker/DlqWorker.csproj" Id="f3f73c30-8d86-4a9d-a9bb-58a3ba2e71fc" />
     <Project Path="examples/InMemoryWorker/InMemoryWorker.csproj" />
+    <Project Path="examples/LocalInMemoryWorker/LocalInMemoryWorker.csproj" Id="d3b608d9-de3c-473d-9903-a2f11151e117" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="tests/NanoBus.IntegrationTests/NanoBus.IntegrationTests.csproj" />
