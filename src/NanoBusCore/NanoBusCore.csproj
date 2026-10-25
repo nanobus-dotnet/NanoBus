@@ -52,7 +52,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<None Include="$(OutputPath)NanoBus.Core.dll" Pack="true" PackagePath="analyzers/dotnet/cs" />
+	<None Include="$(OutputPath)NanoBusCore.dll" Pack="true" PackagePath="analyzers/dotnet/cs" />
   </ItemGroup>
 
 </Project>
