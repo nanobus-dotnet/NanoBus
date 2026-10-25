@@ -85,8 +85,8 @@ public class MessageHandlerRegistryTests
 
         // Act
         var handlers = _registry.GetHandlers(typeof(TestMessage).FullName!);
-        var handler = handlers[0];
-        await handler(message, context, cancellationToken);
+        var (_, Handler) = handlers[0];
+        await Handler.Invoke(message, context, cancellationToken);
 
         // Assert
         handlerMock.Verify(x => x.HandleAsync(message, context, cancellationToken), Times.Once);
@@ -174,7 +174,7 @@ public class MessageHandlerRegistryTests
     }
 
     [Fact]
-    public void GetHandlers_ShouldBeAssignableToIReadOnlyList()
+    public void GetHandlers_ShouldReturnIReadOnlyList()
     {
         // Arrange
         var handlerMock = new Mock<IMessageHandler<TestMessage>>();
@@ -184,7 +184,7 @@ public class MessageHandlerRegistryTests
         var handlers = _registry.GetHandlers(typeof(TestMessage).FullName!);
 
         // Assert
-        handlers.ShouldBeAssignableTo<IReadOnlyList<Func<IMessage, MessageContext, CancellationToken, ValueTask>>>();
+        handlers.ShouldBeAssignableTo<IReadOnlyList<(string HandlerType, Func<IMessage, MessageContext, CancellationToken, ValueTask> Handler)>>();
     }
 
     [Fact]

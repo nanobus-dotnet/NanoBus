@@ -225,7 +225,7 @@ public class InMemoryTransport(IMessageChannelRouter channelManager, IDeadLetter
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Delivery failed for MessageId: {MessageId} - Correlation Id: {CorrelationId} - MessageType: '{MessageType}'", context.MessageId, context.CorrelationId, messageType);
+                _logger.LogError(ex, "Delivery failed for MessageId: {MessageId} - CorrelationId: {CorrelationId} - MessageType: '{MessageType}'", context.MessageId, context.CorrelationId, messageType);
                 await _deadLetterQueue.EnqueueAsync(message, messageType, method, context, DateTime.UtcNow, 1, ex, invokerToken, cancellationToken)
                     .ConfigureAwait(false);
             }
@@ -252,7 +252,7 @@ public class InMemoryTransport(IMessageChannelRouter channelManager, IDeadLetter
 
                     try // Attempt redelivery.
                     {
-                        await InvokeHandlersAsync(messageType, handlers, message, method, context, token)
+                        await InvokeDlqHandlersAsync(messageType, handlers, message, method, context, token)
                             .ConfigureAwait(false);
                     }
                     catch (Exception ex)
@@ -279,18 +279,42 @@ public class InMemoryTransport(IMessageChannelRouter channelManager, IDeadLetter
     /// <summary>
     /// Invokes message handlers by message type and method.
     /// </summary>
-    private async Task InvokeHandlersAsync(string messageType, IReadOnlyList<Func<IMessage, MessageContext, CancellationToken, ValueTask>> handlers, IMessage message, MessageMethod method, MessageContext context, CancellationToken token)
+    private async Task InvokeHandlersAsync(string messageType, IReadOnlyList<(string HandlerType, Func<IMessage, MessageContext, CancellationToken, ValueTask> Handler)> handlers, IMessage message, MessageMethod method, MessageContext context, CancellationToken token)
     {
         switch (method)
         {
             case MessageMethod.Send:
                 if (handlers.Count > 1)
-                    _logger.LogWarning("More than one handler registered for sent message type '{MessageType}'. Only the first handler registered will receive the message.", messageType);
-                await handlers[0].Invoke(message, context, token)
+                    _logger.LogWarning("More than one handler registered for sent message type '{MessageType}'", messageType);
+                await handlers[0].Handler(message, context, token)
                     .ConfigureAwait(false);
                 break;
             case MessageMethod.Publish:
-                await Task.WhenAll(handlers.Select(h => h.Invoke(message, context, token).AsTask()))
+                await Task.WhenAll(handlers.Select(h => h.Handler(message, context, token).AsTask()))
+                    .ConfigureAwait(false);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Invokes message handlers of DLQ messages by message type and method.
+    /// Skip any handlers marked 
+    /// </summary>
+    private async Task InvokeDlqHandlersAsync(string messageType, IReadOnlyList<(string HandlerType, Func<IMessage, MessageContext, CancellationToken, ValueTask> Handler)> handlers, IMessage message, MessageMethod method, MessageContext context, CancellationToken token)
+    {
+        switch (method)
+        {
+            case MessageMethod.Send:
+                var (HandlerType, Handler) = handlers[0];
+
+                if (handlers.Count > 1)
+                    _logger.LogWarning("More than one handler registered for sent message type '{MessageType}'. Only the first handler will receive the message.", messageType);
+
+                await Handler(message, context, token)
+                    .ConfigureAwait(false);
+                break;
+            case MessageMethod.Publish:
+                await Task.WhenAll(handlers.Select(h => h.Handler(message, context, token).AsTask()))
                     .ConfigureAwait(false);
                 break;
         }

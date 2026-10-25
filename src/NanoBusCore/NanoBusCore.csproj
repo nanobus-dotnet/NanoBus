@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net8.0</TargetFramework>
+	<Nullable>enable</Nullable>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<LangVersion>latest</LangVersion>
+	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+	<IsRoslynComponent>true</IsRoslynComponent>
+	<IncludeBuildOutput>true</IncludeBuildOutput>
+
+	<PackageId>NanoBusCore</PackageId>
+	<Title>NanoBus Core</Title>
+	<Version>0.1.11</Version>
+	<Description>Lightweight, AOT-first core implementation of NanoBus.</Description>
+	<Authors>Wayland Young</Authors>
+	<PackageProjectUrl>https://github.com/nanobus-dotnet</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/nanobus-dotnet/nanobus</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+	<License>MIT</License>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+	<NoWarn>$(NoWarn);NU5128</NoWarn>
+
+	<!-- Trim and AOT readiness -->
+	<PublishTrimmed>true</PublishTrimmed>
+	<TrimMode>full</TrimMode>
+	<PublishAot>true</PublishAot>
+	<EnableAotAnalyzer>true</EnableAotAnalyzer>
+	<InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!-- Including README.md -->
+  <ItemGroup>
+	<None Include="../../README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <!-- Dependencies -->
+  <ItemGroup>
+	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
+	<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="all" />
+	<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
+	<PackageReference Include="System.Text.Json" Version="10.0.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ProjectReference Include="..\NanoBus.Abstractions\NanoBus.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<None Include="$(OutputPath)NanoBusCore.dll" Pack="true" PackagePath="analyzers/dotnet/cs" />
+  </ItemGroup>
+
+</Project>

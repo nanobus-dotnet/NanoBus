@@ -9,11 +9,12 @@
 	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
 	<IsRoslynComponent>true</IsRoslynComponent>
+	<IncludeBuildOutput>true</IncludeBuildOutput>
 
 	<!-- Package metadata -->
 	<PackageId>NanoBus.Transports.InMemory</PackageId>
 	<Title>NanoBus In-Memory Transport</Title>
-	<Version>0.1.3</Version>
+	<Version>0.1.11</Version>
 	<Description>Lightweight, AOT-first in-memory transport for NanoBus.</Description>
 	<Authors>Wayland Young</Authors>
 	<PackageProjectUrl>https://github.com/nanobus-dotnet</PackageProjectUrl>
@@ -46,14 +47,10 @@
 	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
 	<PackageReference Include="System.Text.Json" Version="10.0.12" />
   </ItemGroup>
-
   <ItemGroup>
-	<ProjectReference Include="..\NanoBus.Core\NanoBus.Core.csproj" />
+	<ProjectReference Include="..\NanoBusCore\NanoBusCore.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-	<Compile Include="..\NanoBus.Core\MessageHandlerExtensionsGenerator.cs" Link="MessageHandlerExtensionsGenerator.cs" />
+	<None Include="$(OutputPath)NanoBus.Transports.InMemory.dll" Pack="true" PackagePath="analyzers/dotnet/cs" />
   </ItemGroup>
-
-
 </Project>

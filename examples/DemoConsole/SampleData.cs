@@ -71,7 +71,7 @@ public static class SampleData
                 Id = 2,
                 OrderNumber = "Order-002",
                 OrderDate = DateTime.Now.AddDays(-2),
-                CustomerName = "Jane Doe",
+                CustomerName = "Sue Adams",
                 TotalAmount = 159.98m,
                 Items =
                 [

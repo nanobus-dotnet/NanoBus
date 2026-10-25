@@ -5,7 +5,6 @@ using NanoBus.Abstractions;
 
 namespace NanoBus.Transports.InMemory;
 
-
 /// <summary>
 /// Routes messages to channels for delivery and query.
 /// </summary>
@@ -23,7 +22,10 @@ public class MessageChannelRouter(int boundedChannelCapacity = 100) : IMessageCh
     {
         var channel = _typeChannels.GetOrAdd(messageType, _ =>
             Channel.CreateBounded<(IMessage, MessageMethod, MessageContext, CancellationToken)>(
-                new BoundedChannelOptions(BoundedChannelCapacity) { FullMode = BoundedChannelFullMode.Wait }));
+                new BoundedChannelOptions(BoundedChannelCapacity)
+                { 
+                    FullMode = BoundedChannelFullMode.Wait 
+                }));
 
         if (!await channel.Writer.WaitToWriteAsync(invokerToken)
             .ConfigureAwait(false))

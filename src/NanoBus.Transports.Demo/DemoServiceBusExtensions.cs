@@ -17,9 +17,11 @@ public static class DemoServiceBusExtensions
     /// <param name="options">The transport options to configure.</param>
     /// <param name="configure">Callback to late-bind bus configuration.</param>
     /// <returns>The configured service collection.</returns>
-    public static IServiceCollection AddDemoServiceBus(this IServiceCollection services, 
-        Action<TransportOptions>? options = null, 
-        Action<IServiceProvider, ITransport>? configure = null)
+    public static IServiceCollection AddDemoServiceBus(
+        this IServiceCollection services,
+        Action<TransportOptions>? options = null,
+        Action<IServiceProvider, ITransport>? configure = null
+        )
     {
         services.AddServiceBus(configure);
 

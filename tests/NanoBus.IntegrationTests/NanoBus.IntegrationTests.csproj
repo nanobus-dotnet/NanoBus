@@ -20,7 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\..\src\NanoBus.Core\NanoBus.Core.csproj" />
 	<ProjectReference Include="..\..\src\NanoBus.Transports.Demo\NanoBus.Transports.Demo.csproj" />
 	<ProjectReference Include="..\..\src\NanoBus.Transports.InMemory\NanoBus.Transports.InMemory.csproj" />
   </ItemGroup>

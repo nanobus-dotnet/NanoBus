@@ -10,7 +10,7 @@ public class InMemoryTransportOptions : TransportOptions
     /// <summary>
     /// The maximum capacity for each message type channel.
     /// </summary>
-    public int MaxChannelCapacity { get; set; } = 1000;
+    public int MaxChannelCapacity { get; set; } = 100;
 
     /// <summary>
     /// The amount of time to throttle polling for DLQ messages.

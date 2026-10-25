@@ -140,7 +140,7 @@ public class InMemoryTransportTests
         // Act
         var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
         await transport.ProcessDeadLetterQueueAsync(cts.Token);
-        await Task.Delay(TimeSpan.FromSeconds(1)); // Allow message loop to run.
+        await Task.Delay(TimeSpan.FromSeconds(2)); // Allow message loop to run.
 
         // Assert
         _mockLogger.VerifyMessageContains("More than one handler registered for sent message type", LogLevel.Warning, Times.AtLeastOnce);

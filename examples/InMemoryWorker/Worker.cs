@@ -1,3 +1,4 @@
+using ClientLibrary;
 using NanoBus.Abstractions;
 
 namespace InMemoryWorker;
@@ -14,52 +15,56 @@ public class Worker(IServiceBus serviceBus, ILogger<Worker> logger) : Background
 
         _logger.LogInformation("Processing sales orders");
 
-        //while (!stoppingToken.IsCancellationRequested)
-        //{
+        var orderx = SampleData.GetCreateSalesOrderCommand(1);
 
-        foreach (var order in SampleData.GetSalesOrders())
+        await _serviceBus.SendAsync(orderx, cancellationToken: stoppingToken);
+
+        while (!stoppingToken.IsCancellationRequested)
         {
-            var createOrderCommand = SampleData.GetCreateSalesOrderCommand(order.Id);
-            await _serviceBus.SendAsync(createOrderCommand, cancellationToken: stoppingToken);
-            await Task.Delay(TimeSpan.FromSeconds(new Random().Next(1, 5)), stoppingToken);
+            foreach (var order in SampleData.GetSalesOrders())
+            {
+                var createOrderCommand = SampleData.GetCreateSalesOrderCommand(order.Id);
+                await _serviceBus.SendAsync(createOrderCommand, cancellationToken: stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(new Random().Next(1, 5)), stoppingToken);
+            }
+
+            // Allow a bit of time then get the DLQ messages.
+            await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
+            var failedMessages = (await _serviceBus.GetFailedDeadLetterMessagesAsync(stoppingToken)).ToList();
+
+            if (failedMessages.Count == 0)
+            {
+                _logger.LogInformation("No messages in the DLQ.");
+                continue;
+            }
+
+            _logger.LogInformation("{Count} messages found in the DLQ.", failedMessages.Count);
+
+            // Reprocess a single DLQ message.
+            var uniqueId = failedMessages.First().UniqueId;
+
+            await _serviceBus.ReprocessDeadLetterMessageAsync(uniqueId, stoppingToken);
+
+            // Then reprocess all DLQ messages.
+            await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
+
+            foreach (var message in failedMessages)
+            {
+                var context = message.Context;
+                _logger.LogInformation("DLQ Message: {UniqueId} - MessageId: {MessageId} - CorrelationId: {CorrelationId} - {DeliveryAttempts} Delivery Attempts - Failed at: {LastFailedOn} - {ErrorMessage}", message.UniqueId, context.MessageId, context.CorrelationId, message.DeliveryAttempts, message.LastFailedOn, message.LastError?.Message);
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
+
+            // Reprocess the entire DLQ.
+            await _serviceBus.ReprocessDeadLetterQueueAsync(stoppingToken);
+
+            await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
+
+            // Clear the DLQ.
+            await _serviceBus.ClearDeadLetterQueueAsync(stoppingToken);
+
         }
-
-        await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
-
-        var failedMessages = await _serviceBus.GetFailedDeadLetterMessagesAsync(stoppingToken);
-
-        if (!failedMessages.Any())
-        {
-            _logger.LogInformation("No failed messages.");
-            return;
-        }
-
-        // Allow a bit of time then get the DLQ messages.
-        await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
-
-        // Reprocess a single DLQ message.
-        var uniqueId = failedMessages.First().UniqueId;
-
-        await _serviceBus.ReprocessDeadLetterMessageAsync(uniqueId, stoppingToken);
-
-        // Then reprocess all DLQ messages.
-        await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
-
-        foreach (var message in failedMessages)
-        {
-            var context = message.Context;
-            _logger.LogInformation("DLQ Message: {UniqueId} - MessageId: {MessageId} - CorrelationId: {CorrelationId} - {DeliveryAttempts} Delivery Attempts - Failed at: {LastFailedOn} - {ErrorMessage}", message.UniqueId, context.MessageId, context.CorrelationId, message.DeliveryAttempts, message.LastFailedOn, message.LastError?.Message);
-        }
-
-        await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
-
-        await _serviceBus.ReprocessDeadLetterQueueAsync(stoppingToken);
-
-        await Task.Delay(TimeSpan.FromSeconds(15), stoppingToken);
-
-        await _serviceBus.ClearDeadLetterQueueAsync(stoppingToken);
-
-        //}
 
     }
 }

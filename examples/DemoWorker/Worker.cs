@@ -1,3 +1,4 @@
+using ClientLibrary;
 using NanoBus.Abstractions;
 
 namespace DemoWorker;

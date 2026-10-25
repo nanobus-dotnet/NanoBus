@@ -5,7 +5,7 @@ namespace DemoConsole.Handlers;
 
 public class CreateSalesOrderHandler : IMessageHandler<CreateSalesOrderCommand>
 {
-    public async ValueTask HandleAsync(CreateSalesOrderCommand message, MessageContext context, CancellationToken cancellationToken = default)
+    public async ValueTask HandleAsync(CreateSalesOrderCommand message, MessageContext context, CancellationToken cancellationToken)
     {
         Console.WriteLine($"Received MessageId: {context.MessageId} CorrelationId: {context.CorrelationId}");
         Console.WriteLine($"Creating sales order: {message.OrderNumber} '{message.CustomerName}' '{message.OrderDate}' Total: {message.TotalAmount:C}");
