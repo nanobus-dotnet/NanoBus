@@ -21,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\NanoBus.Core\NanoBus.Core.csproj" OutputItemType="Analyzer" />
-    <ProjectReference Include="..\..\src\NanoBus.Transports.InMemory\NanoBus.Transports.InMemory.csproj" OutputItemType="Analyzer"  />
+	<ProjectReference Include="..\..\src\NanoBusCore\NanoBusCore.csproj" OutputItemType="Analyzer" />
+	<ProjectReference Include="..\..\src\NanoBus.Transports.InMemory\NanoBus.Transports.InMemory.csproj" OutputItemType="Analyzer" />
   </ItemGroup>
 
 </Project>

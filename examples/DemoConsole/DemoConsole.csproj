@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NanoBus.Transports.Demo" Version="0.1.8" />
+    <PackageReference Include="NanoBus.Transports.Demo" Version="0.1.11" />
   </ItemGroup>
 
 </Project>

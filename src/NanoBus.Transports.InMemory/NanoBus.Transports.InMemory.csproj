@@ -14,7 +14,7 @@
 	<!-- Package metadata -->
 	<PackageId>NanoBus.Transports.InMemory</PackageId>
 	<Title>NanoBus In-Memory Transport</Title>
-	<Version>0.1.10</Version>
+	<Version>0.1.11</Version>
 	<Description>Lightweight, AOT-first in-memory transport for NanoBus.</Description>
 	<Authors>Wayland Young</Authors>
 	<PackageProjectUrl>https://github.com/nanobus-dotnet</PackageProjectUrl>
@@ -48,7 +48,7 @@
 	<PackageReference Include="System.Text.Json" Version="10.0.12" />
   </ItemGroup>
   <ItemGroup>
-	<ProjectReference Include="..\NanoBus.Core\NanoBus.Core.csproj" />
+	<ProjectReference Include="..\NanoBusCore\NanoBusCore.csproj" />
   </ItemGroup>
   <ItemGroup>
 	<None Include="$(OutputPath)NanoBus.Transports.InMemory.dll" Pack="true" PackagePath="analyzers/dotnet/cs" />

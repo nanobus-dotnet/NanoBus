@@ -12,7 +12,7 @@
 
 	<PackageId>NanoBusCore</PackageId>
 	<Title>NanoBus Core</Title>
-	<Version>0.1.10</Version>
+	<Version>0.1.11</Version>
 	<Description>Lightweight, AOT-first core implementation of NanoBus.</Description>
 	<Authors>Wayland Young</Authors>
 	<PackageProjectUrl>https://github.com/nanobus-dotnet</PackageProjectUrl>

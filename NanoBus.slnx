@@ -6,7 +6,7 @@
     <Project Path="benchmarks/NanoBus.Benchmarks/NanoBus.Benchmarks.csproj" Id="3071bcc4-18ff-457c-ae5a-235d34eeb38a" />
   </Folder>
   <Folder Name="/Core/">
-    <Project Path="src/NanoBus.Core/NanoBus.Core.csproj" />
+    <Project Path="src/NanoBusCore/NanoBusCore.csproj" />
   </Folder>
   <Folder Name="/Examples/">
     <Project Path="examples/ClientLibrary/ClientLibrary.csproj" />
