@@ -12,7 +12,7 @@
 
 	<PackageId>NanoBusCore</PackageId>
 	<Title>NanoBus Core</Title>
-	<Version>0.1.11</Version>
+	<Version>0.1.12</Version>
 	<Description>Lightweight, AOT-first core implementation of NanoBus.</Description>
 	<Authors>Wayland Young</Authors>
 	<PackageProjectUrl>https://github.com/nanobus-dotnet</PackageProjectUrl>
@@ -41,6 +41,7 @@
 
   <!-- Dependencies -->
   <ItemGroup>
+	<PackageReference Include="Microsoft.DotNet.ILCompiler" Version="8.0.33" />
 	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
 	<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" PrivateAssets="all" />
 	<PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
