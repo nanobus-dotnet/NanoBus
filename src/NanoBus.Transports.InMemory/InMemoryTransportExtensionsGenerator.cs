@@ -29,6 +29,8 @@ public class InMemoryTransportExtensionsGenerator : IIncrementalGenerator
                 using NanoBus.Abstractions;
                 using NanoBus.Core;
                 using NanoBus.Transports.InMemory;
+
+                namespace NanoBus.Transports.InMemory.SourceGeneration;
                 
                 public static class InMemoryTransportExtensions
                 {

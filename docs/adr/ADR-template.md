@@ -1,4 +1,4 @@
-# ADR-XXX: [Add ADR title]
+# YYYY.MM.DD - [Add ADR title]
 
 **Date:** [Date]  
 **Status:** [Accepted/Rejected]  
@@ -35,6 +35,7 @@
 - [Add any notes.]
 
 ## References
-- Related ADRs: [[ADR-XXX](./ADR-XXX.md) (ADR title)]
+- Related ADRs: 
+  - [[YYYY.MM.DD - Title] (./YYYY.MM.DD-description.md) (ADR title)]
 - Structurizr Components: [`X`, `Y`, `Z`]
 

@@ -1,4 +1,5 @@
 using LocalInMemoryWorker;
+using NanoBus.Transports.InMemory.SourceGeneration;
 using Serilog;
 
 var builder = Host.CreateApplicationBuilder(args);

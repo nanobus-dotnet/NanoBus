@@ -97,6 +97,8 @@ public class MessageHandlerExtensionsGenerator : IIncrementalGenerator
         using Microsoft.Extensions.DependencyInjection;
         using NanoBus.Abstractions;
 
+        namespace NanoBus.Transports.Demo.SourceGeneration;
+
         public static class MessageHandlerExtensions
         {
         """);
@@ -107,14 +109,13 @@ public class MessageHandlerExtensionsGenerator : IIncrementalGenerator
         // </summary>
         public static IServiceProvider AddMessageHandlersTo(this IServiceProvider serviceProvider, ITransport transport)
         {
-            using var scope = serviceProvider.CreateScope();
     """);
 
         foreach (var handler in handlers.OrderBy(h => h.HandlerClassName))
         {
             source.AppendLine($$"""
                 // Register {{handler.HandlerClassName}} for {{handler.MessageTypeName}}.
-                var handler_{{handler.HandlerClassName}} = scope.ServiceProvider.GetRequiredService<{{handler.FullyQualifiedHandler}}>();
+                var handler_{{handler.HandlerClassName}} = serviceProvider.GetRequiredService<{{handler.FullyQualifiedHandler}}>();
                 transport.RegisterHandler<{{handler.FullyQualifiedMessage}}>(handler_{{handler.HandlerClassName}});
         """);
         }
@@ -137,7 +138,7 @@ public class MessageHandlerExtensionsGenerator : IIncrementalGenerator
         {
             source.AppendLine($$"""
             // Add {{handler.HandlerClassName}} to the container.
-            services.AddScoped<{{handler.FullyQualifiedHandler}}>();
+            services.AddSingleton<{{handler.FullyQualifiedHandler}}>();
     """);
         }
 
