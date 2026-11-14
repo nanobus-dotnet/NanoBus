@@ -33,7 +33,7 @@ public class InMemoryDeadLetterQueueTests
             x => x.Log(
                 LogLevel.Warning,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, _) => v.ToString()!.Equals("Delivery attempt must be at least 1. Setting to 1.")),
+                It.Is<It.IsAnyType>((v, _) => v!.ToString()!.Equals("Delivery attempt must be at least 1. Setting to 1.")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
@@ -63,7 +63,7 @@ public class InMemoryDeadLetterQueueTests
             x => x.Log(
                 LogLevel.Warning,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, _) => v.ToString()!.Equals("Delivery attempt must be at least 1. Setting to 1.")),
+                It.Is<It.IsAnyType>((v, _) => v!.ToString()!.Equals("Delivery attempt must be at least 1. Setting to 1.")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Never);
