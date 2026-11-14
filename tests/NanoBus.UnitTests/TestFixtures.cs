@@ -57,7 +57,7 @@ public static class MoqLoggerExtensions
             l => l.Log(
                 level,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Equals(message)),
+                It.Is<It.IsAnyType>((v, t) => v!.ToString()!.Equals(message)),
                 It.IsAny<Exception?>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             times);
@@ -69,7 +69,7 @@ public static class MoqLoggerExtensions
             l => l.Log(
                 level,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains(message)),
+                It.Is<It.IsAnyType>((v, t) => v!.ToString()!.Contains(message)),
                 It.IsAny<Exception?>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             times);

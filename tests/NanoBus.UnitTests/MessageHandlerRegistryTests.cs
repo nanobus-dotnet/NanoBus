@@ -45,7 +45,7 @@ public class MessageHandlerRegistryTests
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Registered handler type")),
+                It.Is<It.IsAnyType>((v, t) => v!.ToString()!.Contains("Registered handler type")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
@@ -167,7 +167,7 @@ public class MessageHandlerRegistryTests
             x => x.Log(
                 LogLevel.Error,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("No handlers registered for type")),
+                It.Is<It.IsAnyType>((v, t) => v!.ToString()!.Contains("No handlers registered for type")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
