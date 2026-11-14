@@ -33,6 +33,8 @@ public class DemoTransportExtensionsGenerator : IIncrementalGenerator
                 using NanoBus.Abstractions;
                 using NanoBus.Core;
                 using NanoBus.Transports.Demo;
+
+                namespace NanoBus.Transports.Demo.SourceGeneration;
                 
                 public static class DemoTransportExtensions
                 {
